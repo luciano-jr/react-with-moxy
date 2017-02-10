@@ -141,7 +141,7 @@ module.exports = (options) => {
                         {
                             loader: 'external-svg-sprite-loader',
                             options: {
-                                name: 'img/svg-sprite.[hash:15].svg',
+                                name: 'images/svg-sprite.[hash:15].svg',
                                 prefix: 'svg',
                             },
                         },
