@@ -6,6 +6,7 @@ MOXY's react boilerplate.
 
 TODO:
 
+
 ### Main stuff
 
 - react
@@ -19,6 +20,10 @@ TODO:
 
 - external-svg-sprite-loader
 - husky
+- styles:
+    - nprogress
+    - font variables
+    - color variables
 
 
 ## Installation

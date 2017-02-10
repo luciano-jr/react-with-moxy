@@ -1,6 +1,6 @@
 import Home from './Home';
 
-export default [
+export default () => [
     {
         indexRoute: true,
         component: Home,

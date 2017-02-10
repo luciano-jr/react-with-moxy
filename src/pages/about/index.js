@@ -1,8 +1,6 @@
-export default [
+export default (loadComponent) => [
     {
         path: 'about',
-        getComponent() {
-            return import('./About').then((module) => module.default);
-        },
+        getComponent: () => loadComponent(import('./About')),
     },
 ];

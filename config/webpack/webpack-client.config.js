@@ -47,7 +47,7 @@ module.exports = (options) => {
             path: `${projectDir}/web/build/`,
             publicPath: `${config.publicPath}/`,
             filename: !options.build ? '[name].js' : '[name].[chunkhash].js',
-            chunkFilename: !options.build ? '[name].js' : '[name].[chunkhash].js',
+            chunkFilename: !options.build ? 'chunk.[name].js' : 'chunk.[name].[chunkhash].js',
         },
         resolve: {
             alias: {

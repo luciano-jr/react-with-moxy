@@ -2,6 +2,7 @@ import config from 'config';
 import React from 'react';
 import { render } from 'react-dom';
 import { match, Router, browserHistory } from 'react-router';
+import nprogress from 'nprogress';
 import App from './App';
 import buildRoutes from './pages/buildRoutes';
 
@@ -14,6 +15,9 @@ browserHistory.listen((location) => {
         window.ga('send', 'pageview');
     }
 });
+
+// Configure nprogress, see: https://github.com/rstacruz/nprogress
+nprogress.configure({ minimum: 0.15, showSpinner: false, speed: 500 });
 
 // Build our routes
 const routes = {
