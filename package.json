@@ -10,8 +10,7 @@
     "build:prod": "./bin/build prod",
     "start": "./bin/server",
     "start:dev": "./bin/server-dev",
-    "pre-commit": "./bin/lint",
-    "postinstall": "./bin/init",
+    "precommit": "./bin/lint",
     "test": "npm run lint"
   },
   "repository": {
@@ -60,6 +59,7 @@
     "external-svg-sprite-loader": "^2.0.0",
     "extract-text-webpack-plugin": "beta",
     "file-loader": "^0.10.0",
+    "husky": "^0.13.1",
     "planify": "^1.5.0",
     "postcss-css-variables": "^0.6.0",
     "postcss-cssnext": "^2.9.0",

@@ -6,11 +6,19 @@ MOXY's react boilerplate.
 
 TODO:
 
+### Main stuff
+
 - react
 - react-router
 - redata
 - postcss with cssnext
 - webpack
+
+
+### Misc
+
+- external-svg-sprite-loader
+- husky
 
 
 ## Installation
