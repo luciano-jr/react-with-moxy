@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Link } from 'react-router';
-import SvgInline from 'shared/components/svg-inline/SvgInline';
+import SvgInline from 'shared/components/svg/SvgInline';
 import Navigation from './navigation/Navigation';
 import moxySvg from 'shared/media/images/logos/moxy-square.colored.svg';
 import './Header.css';

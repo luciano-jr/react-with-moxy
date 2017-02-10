@@ -207,7 +207,7 @@ module.exports = (options) => {
                 __CLIENT__: true,
                 __SERVER__: false,
             }),
-            // TODO:
+            // Enabling gives us better debugging output
             new NamedModulesPlugin(),
             // Ensures that hot reloading works
             !options.build && new HotModuleReplacementPlugin(),
@@ -220,6 +220,7 @@ module.exports = (options) => {
                 allChunks: true,
                 disable: !options.build,
             }),
+            // External svg sprite plugin
             new SvgStorePlugin(),
             // Minify JS
             options.minify && new UglifyJsPlugin({
