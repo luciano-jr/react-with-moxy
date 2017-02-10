@@ -133,10 +133,10 @@ module.exports = (options) => {
                 },
                 // Load SVG files and create an external sprite
                 // While this has a lot of advantages, such as not blocking the initial load, it can't contain
-                // colored SVGs, see: https://github.com/moxystudio/react-with-moxy/issues/6
+                // inline SVGs, see: https://github.com/moxystudio/react-with-moxy/issues/6
                 {
                     test: /\.svg$/,
-                    exclude: [/\.colored\.svg$/, './src/shared/media/fonts'],
+                    exclude: [/\.inline\.svg$/, './src/shared/media/fonts'],
                     use: [
                         {
                             loader: 'external-svg-sprite-loader',
@@ -148,9 +148,10 @@ module.exports = (options) => {
                         'svg-css-modules-loader?transformId=true',
                     ],
                 },
-                // Load colored SVG files inline so that colors are kept intact
+                // Loader for inline SVGs to support SVGs that do not integrate well with external-svg-sprite-loader,
+                // see: https://github.com/moxystudio/react-with-moxy/issues/6
                 {
-                    test: /\.colored\.svg$/,
+                    test: /\.inline\.svg$/,
                     use: [
                         'raw-loader',
                         {

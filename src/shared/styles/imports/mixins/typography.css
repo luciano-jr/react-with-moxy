@@ -22,7 +22,6 @@
     overflow: hidden;       /* "overflow" value must be different from "visible" */
     text-overflow: ellipsis;
     white-space: nowrap;
-    word-wrap: normal;      /* Deprecated in favor of "overflow-wrap" */
     overflow-wrap: normal;
 }
 
