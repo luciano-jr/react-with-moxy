@@ -23,7 +23,7 @@ TODO:
 
 ## Development
 
-Simply spawn the server by running `$ npm start:dev`.
+Simply spawn the server by running `$ npm run start:dev`.
 
 TODO
 
