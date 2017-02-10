@@ -1,0 +1,135 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const path = require('path');
+const yargs = require('yargs');
+const planify = require('planify');
+const webpack = require('webpack');
+const rimraf = require('rimraf');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const express = require('express');
+const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
+const validator = require('./common/validator');
+
+const projectDir = `${__dirname}/..`;
+
+// ---------------------------------------------------------
+// CLI definition
+// ---------------------------------------------------------
+
+const argv = yargs
+.strict()
+.wrap(Math.min(120, yargs.terminalWidth()))
+.help('help').alias('help', 'h')
+.usage('Usage: ./$0 [options]')
+.demand(0, 0)
+.option('hostname', {
+    alias: 'H',
+    type: 'string',
+    default: '0.0.0.0',
+})
+.option('port', {
+    alias: 'p',
+    type: 'number',
+    default: 8080,
+})
+.option('polling', {
+    alias: ['poll'],
+    type: 'boolean',
+    describe: 'Use polling whe watching for file changes, disable it if you are having issues with polling (defaults to automatic)',
+})
+.option('reporter', {
+    alias: ['r', 'R'],
+    type: 'string',
+    describe: 'Any of the planify\'s reporters',
+})
+.example('$0', 'Serves the application for local development')
+.example('$0 --port 8081', 'Serves the application for local development in port 8081')
+.argv;
+
+const env = 'dev';  // This server is only for the dev environment
+
+// ---------------------------------------------------------
+// Functions
+// ---------------------------------------------------------
+
+function setupClientCompiler(app) {
+    const clientConfig = webpackClientConfig({ env });
+    const clientCompiler = webpack(clientConfig);
+
+    const webpackDevMiddlewareInstance = webpackDevMiddleware(clientCompiler, {
+        publicPath: clientConfig.output.publicPath,
+        watchOptions: {
+            aggregateTimeout: 300,  // Wait so long for more changes
+            poll: argv.polling,
+        },
+        noInfo: true,
+        quiet: true,
+        lazy: false,
+    });
+
+    webpackDevMiddlewareInstance.waitUntilValid((stats) => {
+        const statsJson = stats.toJson();
+        const statsStr = stats.toString({ chunks: false, children: false, modules: false, colors: true }).trim();
+
+        if (statsJson.errors.length) {
+            process.stdout.write('> Webpack client-side build failed..\n');
+            process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            process.stdout.write(`${statsStr}\n\n`);
+            return;
+        }
+
+        process.stdout.write('Webpack client-side successful\n');
+        process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+        process.stdout.write(`${statsStr}\n\n`);
+    });
+
+    app.use(webpackDevMiddlewareInstance);
+    app.use(webpackHotMiddleware(clientCompiler, { log: null }));
+}
+
+function prepareWeb() {
+    process.stdout.write('Cleaning previous build..\n');
+    rimraf.sync(`${projectDir}/web/build`);
+}
+
+function runServer() {
+    const app = express();
+
+    // When doing local development, we want the client-side to be compiled on every change with hmre
+    setupClientCompiler(app);
+
+    // Public files are served as usually
+    app.use('/', express.static('web'));
+    app.get('*', (req, res) => res.sendFile(path.resolve(projectDir, './web/index.html')));
+
+    // Start server
+    return new Promise((resolve, reject) => {
+        process.stdout.write(`Environment:            ${env}\n`);
+        process.stdout.write(`Server address:         http://${argv.hostname}:${argv.port}\n`);
+        process.stdout.write('Hot module replacement: on\n');
+
+        app.listen(argv.port, argv.hostname, (err) => {
+            if (err) {
+                return reject(err);
+            }
+
+            process.stdout.write('\nServer is now up and running, press CTRL-C to stop.\n');
+        });
+    });
+}
+
+// ---------------------------------------------------------
+// Steps
+// ---------------------------------------------------------
+
+planify({ exit: true, reporter: argv.reporter })
+// Validate environment
+.step(`Validating ${env} environment`, () => validator.validateEnvironment(env))
+// Ensure build or clean build & setup if dev
+.step('Preparing web directory', () => prepareWeb())
+// Run server
+.step('Running server', () => runServer())
+.run();

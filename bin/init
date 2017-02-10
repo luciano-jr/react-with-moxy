@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const fs = require('fs');
+const yargs = require('yargs');
+const planify = require('planify');
+
+const projectDir = `${__dirname}/..`;
+
+// ---------------------------------------------------------
+// CLI definition
+// ---------------------------------------------------------
+
+const argv = yargs
+.strict()
+.wrap(Math.min(120, yargs.terminalWidth()))
+.help('help').alias('help', 'h')
+.usage('Usage: ./$0 [options]')
+.demand(0, 0)
+.option('reporter', {
+    alias: ['r', 'R'],
+    type: 'string',
+    describe: 'Any of the planify\'s reporters',
+})
+.argv;
+
+if (argv.help) {
+    yargs.showHelp('log');
+    process.exit(0);
+}
+
+// ---------------------------------------------------------
+// Functions
+// ---------------------------------------------------------
+
+function installPreCommitHook() {
+    const contents = '#!/bin/sh\n\nPATH=$PATH:/usr/local/bin\n\nnpm run pre-commit';
+
+    fs.writeFileSync(`${projectDir}/.git/hooks/pre-commit`, contents);
+    fs.chmodSync(`${projectDir}/.git/hooks/pre-commit`, 0o755);
+
+    process.stdout.write('"npm run pre-commit" will now be automatically run each time you commit.\n');
+}
+
+// ---------------------------------------------------------
+// Steps
+// ---------------------------------------------------------
+
+planify({ exit: true, reporter: argv.reporter })
+// Install pre-commit hook into .git folder
+.step('Installing pre-commit hook', () => installPreCommitHook())
+.run();

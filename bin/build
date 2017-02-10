@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const yargs = require('yargs');
+const planify = require('planify');
+const rimraf = require('rimraf');
+const webpack = require('webpack');
+const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
+const validator = require('./common/validator');
+
+const projectDir = `${__dirname}/..`;
+
+// ---------------------------------------------------------
+// CLI definition
+// ---------------------------------------------------------
+
+const argv = yargs
+.strict()
+.wrap(Math.min(120, yargs.terminalWidth()))
+.version().alias('version', 'v')
+.usage('Usage: ./$0 <env> [options]')
+.demand(0, 1)
+.option('minify', {
+    alias: 'm',
+    type: 'boolean',
+    default: true,
+    describe: 'Whether to minify assets or not (including index.html)',
+})
+.option('reporter', {
+    alias: ['r', 'R'],
+    type: 'string',
+    describe: 'Any of the planify\'s reporters',
+})
+.example('$0 prod', 'Builds the application for the prod environment')
+.example('$0 prod --no-minify', 'Builds the application for the prod environment without minification')
+
+.check((argv) => {
+    if (!argv._[0]) {
+        throw new Error('No environment specified');
+    }
+
+    return true;
+})
+.argv;
+
+if (argv.help) {
+    yargs.showHelp('log');
+    process.exit(0);
+}
+
+const env = argv._[0];
+
+// ---------------------------------------------------------
+// Functions
+// ---------------------------------------------------------
+
+function cleanBuild() {
+    process.stdout.write('Cleaning previous build..\n');
+    rimraf.sync(`${projectDir}/web/build`);
+}
+
+function buildClient() {
+    return new Promise((resolve, reject) => {
+        const clientConfig = webpackClientConfig({ env, build: true, minify: argv.minify });
+
+        webpack(clientConfig, (err, stats) => {
+            if (err) {
+                return reject(err);
+            }
+
+            const statsJson = stats.toJson();
+            const statsStr = stats.toString({ chunks: false, children: false, modules: false, colors: true }).trim();
+
+            if (statsJson.errors.length) {
+                return reject(Object.assign(new Error('Webpack client-side build failed'), { detail: statsStr }));
+            }
+
+            process.stdout.write(`${statsStr}\n\n`);
+
+            resolve();
+        });
+    });
+}
+
+function markBuildAsSuccessful() {
+    fs.writeFileSync(`${projectDir}/web/build/.env`, env);
+
+    process.stdout.write(`Created ${path.relative(process.cwd(), `${projectDir}/web/build/.${env}`)}.\n`);
+}
+
+// ---------------------------------------------------------
+// Steps
+// ---------------------------------------------------------
+
+planify({ exit: true, reporter: argv.reporter })
+// Validate build environment
+.step(`Validating ${env} environment`, () => validator.validateEnvironment(env))
+.step('Removing previous build', () => cleanBuild())
+.step('Building client-side with webpack', { slow: 15000 }, () => buildClient())
+.step('Marking build as successful', () => markBuildAsSuccessful())
+.run();
