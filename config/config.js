@@ -8,9 +8,9 @@ const config = {
     env: '',
     baseUrl: '',  // The base url of the website; used in stuff like shares
     publicPath: '/',  // The webpack public path
-    googleTrackingId: '',  // Used for Google Analytics and other google services
 
-    routesToPrefetch: ['about'],  // Array of routes to prefetch, see web/.index.html.js
+    routesToPrefetch: ['about'],  // Array of routes to prefetch, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ
+    googleTrackingId: '',  // Used for Google Analytics and other google services
 };
 
 module.exports = config;
