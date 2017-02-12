@@ -86,9 +86,7 @@ function runStylelint(files) {
 // ---------------------------------------------------------
 
 planify({ exit: true, reporter: argv.reporter })
-// Run es-lint to validate JS code
 .step('Running es-lint in src/**/*.js, config/**/*.js config/**/*.js', () =>
     runEslint([`${projectDir}/src/**/*.js`, `${projectDir}/config/**/*.js`]))
-// Run stylelint to validate CSS code
 .step('Running stylelint in src/**/*.css', () => runStylelint([`${projectDir}/src/**/*.css`]))
 .run();

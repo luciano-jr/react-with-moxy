@@ -29,7 +29,7 @@ const routes = {
     childRoutes: buildRoutes(),
 };
 
-export default async function render({ req, res, build }) {
+export default async function render({ req, res, buildManifest }) {
     // Match req against our routes
     const { redirectLocation, renderProps } = await matchRoute({
         history: createMemoryHistory(),
@@ -58,14 +58,14 @@ export default async function render({ req, res, build }) {
         head: Helmet.rewind(),
         rootHtml,
         config,
-        build,
+        buildManifest,
     });
 
     // Send HTML
     res.send(html);
 }
 
-export async function renderError({ err, req, res, build }) {
+export async function renderError({ err, req, res, buildManifest }) {
     // Match req against our routes
     const { redirectLocation, renderProps } = await matchRoute({
         history: createMemoryHistory(),
@@ -94,7 +94,7 @@ export async function renderError({ err, req, res, build }) {
         head: Helmet.rewind(),
         rootHtml,
         config,
-        build,
+        buildManifest,
     });
 
     // Send HTML

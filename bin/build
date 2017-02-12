@@ -11,7 +11,7 @@ const webpack = require('webpack');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
 const webpackServerConfig = require('../config/webpack/webpack-server.config.js');
 const validator = require('./util/validator');
-const buildData = require('./util/build-data');
+const manifest = require('./util/manifest');
 
 const projectDir = `${__dirname}/..`;
 
@@ -80,8 +80,8 @@ function buildServer(data) {
                 return reject(Object.assign(new Error('Webpack server-side build failed'), { detail: statsStr }));
             }
 
-            // Store build data
-            data.serverBuild = buildData.fromWebpackStats(stats);
+            // Store manifest data
+            data.serverManifest = manifest.fromWebpackStats(stats);
 
             process.stdout.write(`${statsStr}\n\n`);
 
@@ -106,8 +106,8 @@ function buildClient(data) {
                 return reject(Object.assign(new Error('Webpack client-side build failed'), { detail: statsStr }));
             }
 
-            // Store build data
-            data.clientBuild = buildData.fromWebpackStats(stats);
+            // Store manifest data
+            data.clientManifest = manifest.fromWebpackStats(stats);
 
             process.stdout.write(`${statsStr}\n\n`);
 
@@ -117,14 +117,14 @@ function buildClient(data) {
 }
 
 function markBuildAsSuccessful(data) {
-    const build = Object.assign(
-        buildData.merge(data.serverBuild, data.clientBuild),
+    const buildManifest = Object.assign(
+        manifest.merge(data.serverManifest, data.clientManifest),
         { env }
     );
 
-    fs.writeFileSync(`${projectDir}/web/build/.build.json`, JSON.stringify(build, null, 2));
+    fs.writeFileSync(`${projectDir}/web/build/.manifest.json`, JSON.stringify(buildManifest, null, 2));
 
-    process.stdout.write(`Created ${path.relative(process.cwd(), `${projectDir}/web/build/.build.json`)}.\n`);
+    process.stdout.write(`Created ${path.relative(process.cwd(), `${projectDir}/web/build/.manifest.json`)}.\n`);
 }
 
 // ---------------------------------------------------------
@@ -132,7 +132,6 @@ function markBuildAsSuccessful(data) {
 // ---------------------------------------------------------
 
 planify({ exit: true, reporter: argv.reporter })
-// Validate build environment
 .step(`Validating ${env} environment`, () => validator.validateEnvironment(env))
 .step('Removing previous build', () => cleanBuild())
 .step('Building server-side with webpack', { slow: 15000 }, (data) => buildServer(data))

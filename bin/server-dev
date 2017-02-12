@@ -13,7 +13,7 @@ const express = require('express');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
 const webpackServerConfig = require('../config/webpack/webpack-server.config.js');
 const validator = require('./util/validator');
-const buildData = require('./util/build-data');
+const manifest = require('./util/manifest');
 
 const projectDir = `${__dirname}/..`;
 
@@ -181,12 +181,12 @@ function runServer() {
             return res.send('Client-side bundles are still being compiled, please refresh the page in a few seconds..');
         }
 
-        const build = buildData.merge(
-            buildData.fromWebpackStats(serverStats),
-            buildData.fromWebpackStats(clientStats)
+        const buildManifest = manifest.merge(
+            manifest.fromWebpackStats(serverStats),
+            manifest.fromWebpackStats(clientStats)
         );
 
-        serverRender({ req, res, build })
+        serverRender({ req, res, buildManifest })
         .catch((err) => setImmediate(() => next(err)));
     });
 
@@ -199,12 +199,12 @@ function runServer() {
             return next(err);
         }
 
-        const build = buildData.merge(
-            buildData.fromWebpackStats(serverStats),
-            buildData.fromWebpackStats(clientStats)
+        const buildManifest = manifest.merge(
+            manifest.fromWebpackStats(serverStats),
+            manifest.fromWebpackStats(clientStats)
         );
 
-        serverRenderError({ err, req, res, build })
+        serverRenderError({ err, req, res, buildManifest })
         .catch((err) => setImmediate(() => next(err)));
     });
 
@@ -233,10 +233,7 @@ function runServer() {
 // ---------------------------------------------------------
 
 planify({ exit: true, reporter: argv.reporter })
-// Validate environment
 .step(`Validating ${env} environment`, () => validator.validateEnvironment(env))
-// Ensure build or clean build & setup if dev
 .step('Preparing web directory', () => prepareWeb())
-// Run server
 .step('Running server', () => runServer())
 .run();

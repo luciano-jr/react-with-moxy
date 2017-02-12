@@ -7,6 +7,7 @@ const planify = require('planify');
 const internalIp = require('internal-ip');
 const express = require('express');
 const compression = require('compression');
+const validator = require('./util/validator');
 
 const projectDir = `${__dirname}/..`;
 
@@ -23,7 +24,7 @@ const argv = yargs
 .option('hostname', {
     alias: 'H',
     type: 'string',
-    default: '127.0.0.1',
+    default: '127.0.0.1',  // Defaults to localhost for safety
 })
 .option('port', {
     alias: 'p',
@@ -75,17 +76,17 @@ function runServer() {
     // If it's not a public file, then try to render it using the server-renderer
     const serverRender = require(`${projectDir}/web/build/server-renderer`).default;  // eslint-disable-line global-require
     const serverRenderError = require(`${projectDir}/web/build/server-renderer`).renderError;  // eslint-disable-line global-require
-    const build = require(`${projectDir}/web/build/.build.json`);  // eslint-disable-line global-require
-    const env = build.env || 'N/A';
+    const buildManifest = require(`${projectDir}/web/build/.manifest.json`);  // eslint-disable-line global-require
+    const env = buildManifest.env || 'N/A';
 
     app.get('*', (req, res, next) => {
-        serverRender({ req, res, build })
+        serverRender({ req, res, buildManifest })
         .catch((err) => setImmediate(() => next(err)));
     });
 
     // Error middleware to call "renderError" from the server-renderer
     app.use((err, req, res, next) => {
-        serverRenderError({ err, req, res, build })
+        serverRenderError({ err, req, res, buildManifest })
         .catch((err) => setImmediate(() => next(err)));
     });
 
@@ -113,6 +114,6 @@ function runServer() {
 // ---------------------------------------------------------
 
 planify({ exit: true, reporter: argv.reporter })
-// Run server
+.step('Validating build', () => validator.validateBuild())
 .step('Running server', () => runServer())
 .run();
