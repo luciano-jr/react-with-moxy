@@ -20,6 +20,7 @@ TODO:
 
 - external-svg-sprite-loader
 - husky
+- helmet
 - styles:
     - nprogress
     - font variables

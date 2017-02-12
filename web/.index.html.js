@@ -1,37 +1,52 @@
-export default function({ config, assets }) {
+export default function index({ head, rootHtml, config, buildData }) {
+    const { assets, routes } = buildData;
+    const { routesToPrefetch } = config;
+
+    // Warn if the any of the routes to prefetch no longer exist
+    routesToPrefetch.forEach((route) => {
+        !routes[route] && console.warn(`[index.html] Unknown route "${route}" declared in \`config.routesToPrefetch\``);
+    });
+
     return `
         <!DOCTYPE html>
-        <html>
+        <html ${head.htmlAttributes.toString()}>
             <head>
                 <meta charset="utf-8">
                 <meta http-equiv="x-ua-compatible" content="ie=edge">
+                ${head.title.toString()}
+                ${head.meta.toString()}
+                ${head.link.toString()}
 
                 <!-- Roboto from Google-->
                 <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
 
                 <!-- App stylesheet -->
                 <link id="app-css" rel="stylesheet" href="${assets['app.css']}">
+
+                <!-- Prefetch routes -->
+                ${ routesToPrefetch.map((route) => routes[route] ? `<link rel="prefetch" href="${routes[route]}">` : '').join('\n') }
             </head>
             <body>
                 <!-- Root element where app goes -->
-                <div id="root"></div>
+                <div id="root">${rootHtml}</div>
 
                 <!-- Load main file -->
                 <script src="${assets['main.js']}"></script>
 
                 ${ assets['deferrable.js'] ? `
-                    <!-- Load deferrable file -->
-                    <script src="${assets['deferrable.js']}" async defer></script>
-                 ` ? '' }
+                <!-- Load deferrable file -->
+                <script src="${assets['deferrable.js']}" async defer></script>` : '' }
 
                 ${config.googleTrackingId ? `
-                    <!-- Google Tag Manager -->
-                    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                    })(window,document,'script','dataLayer','${config.googleTrackingId}');</script>
-                    <!-- End Google Tag Manager -->
+                <!-- Google Analytics -->
+                <script>
+                (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+                function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+                e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+                e.src='https://www.google-analytics.com/analytics.js';
+                r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+                ga('create','${config.googleTrackingId}','auto');ga('send','pageview');
+                </script>
                 ` : ''}
             </body>
         </html>

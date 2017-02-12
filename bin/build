@@ -9,7 +9,7 @@ const planify = require('planify');
 const rimraf = require('rimraf');
 const webpack = require('webpack');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
-const validator = require('./common/validator');
+const validator = require('./util/validator');
 
 const projectDir = `${__dirname}/..`;
 

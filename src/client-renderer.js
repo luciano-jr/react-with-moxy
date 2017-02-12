@@ -32,5 +32,11 @@ match({ history: browserHistory, routes }, (error, redirectLocation, renderProps
     render(
         <Router { ...renderProps } routes={ routes }/>,
         document.getElementById('root'),
+        () => {
+            // Remove server-side rendered CSS when developing, otherwise CSS styles would be duplicated
+            if (process.env.NODE_ENV !== 'production') {
+                setTimeout(() => document.getElementById('app-css').remove(), 10);
+            }
+        }
     );
 });

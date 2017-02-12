@@ -2,16 +2,19 @@
 
 'use strict';
 
-const path = require('path');
 const yargs = require('yargs');
 const planify = require('planify');
 const webpack = require('webpack');
 const rimraf = require('rimraf');
+const internalIp = require('internal-ip');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const express = require('express');
+const merge = require('lodash/merge');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
-const validator = require('./common/validator');
+const webpackServerConfig = require('../config/webpack/webpack-server.config.js');
+const validator = require('./util/validator');
+const parseWebpackStats = require('./util/parseWebpackStats');
 
 const projectDir = `${__dirname}/..`;
 
@@ -55,12 +58,47 @@ const env = 'dev';  // This server is only for the dev environment
 // Functions
 // ---------------------------------------------------------
 
-function setupClientCompiler(app) {
-    const clientConfig = webpackClientConfig({ env });
-    const clientCompiler = webpack(clientConfig);
+function printWebpackStatsOnBuild(compiler, compilerType) {
+    let firstBuild = true;
 
-    const webpackDevMiddlewareInstance = webpackDevMiddleware(clientCompiler, {
-        publicPath: clientConfig.output.publicPath,
+    compiler.plugin('done', (stats) => {
+        const statsJson = stats.toJson();
+        const statsStr = stats.toString({ assets: firstBuild, chunks: false, version: false, children: false, modules: false,
+            colors: true }).trim();
+
+        if (statsJson.errors.length) {
+            process.stdout.write(`> Webpack ${compilerType}-side build failed..\n`);
+            process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            process.stdout.write(`${statsStr}\n\n`);
+        } else {
+            process.stdout.write(`Webpack ${compilerType}-side successful\n`);
+            process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+            process.stdout.write(`${statsStr}\n\n`);
+        }
+
+        firstBuild = false;
+    });
+}
+
+function setupClientWebpack(app) {
+    const config = webpackClientConfig({ env });
+    const compiler = webpack(config);
+    const result = {
+        compiler,
+        stats: null,
+    };
+
+    // Print info on each build
+    printWebpackStatsOnBuild(compiler, 'client-side');
+
+    // Store stats on each build
+    compiler.plugin('done', (stats) => {
+        result.stats = stats;
+    });
+
+    // Attach dev + hot middlewares to our express app
+    const webpackDevMiddlewareInstance = webpackDevMiddleware(compiler, {
+        publicPath: config.output.publicPath,
         watchOptions: {
             aggregateTimeout: 300,  // Wait so long for more changes
             poll: argv.polling,
@@ -70,24 +108,48 @@ function setupClientCompiler(app) {
         lazy: false,
     });
 
-    webpackDevMiddlewareInstance.waitUntilValid((stats) => {
-        const statsJson = stats.toJson();
-        const statsStr = stats.toString({ chunks: false, children: false, modules: false, colors: true }).trim();
+    app.use(webpackDevMiddlewareInstance);
+    app.use(webpackHotMiddleware(compiler, { log: null }));
 
-        if (statsJson.errors.length) {
-            process.stdout.write('> Webpack client-side build failed..\n');
+    return result;
+}
+
+function setupServerWebpack() {
+    const config = webpackServerConfig({ env });
+    const compiler = webpack(config);
+    const builtServerRendererFile = `${config.output.path}server-renderer.js`;
+    const result = {
+        compiler,
+    };
+
+    // Print info on each build
+    printWebpackStatsOnBuild(compiler, 'server');
+
+    // Store stats on each build
+    compiler.plugin('done', (stats) => {
+        result.stats = stats;
+    });
+
+    // Complete on each change, storing the render function
+    compiler.watch({
+        aggregateTimeout: 300,  // Wait so long for more changes
+        poll: argv.polling,
+    }, (err) => {
+        // Fatal errors
+        if (err) {
+            process.stdout.write('Webpack server-side build failed..\n');
             process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-            process.stdout.write(`${statsStr}\n\n`);
+            console.log(err);
             return;
         }
 
-        process.stdout.write('Webpack client-side successful\n');
-        process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-        process.stdout.write(`${statsStr}\n\n`);
+        // Get the new server-renderer functions
+        delete require.cache[builtServerRendererFile];
+        result.render = require(builtServerRendererFile).default;  // eslint-disable-line global-require
+        result.renderError = require(builtServerRendererFile).renderError;  // eslint-disable-line global-require
     });
 
-    app.use(webpackDevMiddlewareInstance);
-    app.use(webpackHotMiddleware(clientCompiler, { log: null }));
+    return result;
 }
 
 function prepareWeb() {
@@ -98,25 +160,72 @@ function prepareWeb() {
 function runServer() {
     const app = express();
 
-    // When doing local development, we want the client-side to be compiled on every change with hmre
-    setupClientCompiler(app);
+    // Configure express app
+    app.set('etag', false);  // Not really necessary and disabling it increases performance
+
+    // When doing local development, we want both the client and server to be re-compiled
+    const clientWebpack = setupClientWebpack(app);
+    const serverWebpack = setupServerWebpack();
 
     // Public files are served as usually
     app.use('/', express.static('web'));
-    app.get('*', (req, res) => res.sendFile(path.resolve(projectDir, './web/index.html')));
+
+    // If it's not a public file, then try to render it using the server-renderer
+    app.get('*', (req, res, next) => {
+        const { stats: clientStats } = clientWebpack;
+        const { render: serverRender, stats: serverStats } = serverWebpack;
+
+        if (!serverStats || !serverRender) {
+            return res.send('Server-side bundle is still being compiled, please refresh the page in a few seconds..');
+        }
+        if (!clientStats) {
+            return res.send('Client-side bundles are still being compiled, please refresh the page in a few seconds..');
+        }
+
+        const buildData = merge(
+            parseWebpackStats(serverStats),
+            parseWebpackStats(clientStats)
+        );
+
+        serverRender({ req, res, buildData })
+        .catch((err) => setImmediate(() => next(err)));
+    });
+
+    // Error middleware to call "renderError" from the server-renderer
+    app.use((err, req, res, next) => {
+        console.log('middleware');
+        const { stats: clientStats } = clientWebpack;
+        const { renderError: serverRenderError, stats: serverStats } = serverWebpack;
+
+        if (!serverStats || !serverRenderError || !clientStats) {
+            return next(err);
+        }
+
+        const buildData = merge(
+            parseWebpackStats(serverStats),
+            parseWebpackStats(clientStats)
+        );
+
+        serverRenderError({ err, req, res, buildData })
+        .catch((err) => setImmediate(() => next(err)));
+    });
 
     // Start server
     return new Promise((resolve, reject) => {
-        process.stdout.write(`Environment:            ${env}\n`);
-        process.stdout.write(`Server address:         http://${argv.hostname}:${argv.port}\n`);
-        process.stdout.write('Hot module replacement: on\n');
+        const isLocalOnly = argv.hostname === 'localhost' || argv.hostname === '127.0.0.1';
+
+        process.stdout.write(`Environment:               ${env}\n`);
+        process.stdout.write(`Server address:            http://${argv.hostname}:${argv.port}\n`);
+        !isLocalOnly && process.stdout.write(`LAN server address:        http://${internalIp.v4()}\n`);
+        process.stdout.write('Hot module replacement:    on\n');
 
         app.listen(argv.port, argv.hostname, (err) => {
             if (err) {
                 return reject(err);
             }
 
-            process.stdout.write('\nServer is now up and running, press CTRL-C to stop.\n');
+            process.stdout.write('\nServer is now up and running, press CTRL-C to stop.');
+            process.stdout.write('\nBuilding for the first time, please wait...\n\n');
         });
     });
 }

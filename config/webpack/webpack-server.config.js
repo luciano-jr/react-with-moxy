@@ -11,7 +11,6 @@ const projectDir = path.resolve(`${__dirname}/../..`);
 const SvgStorePlugin = require('external-svg-sprite-loader/lib/SvgStorePlugin');
 const NamedModulesPlugin = require('webpack/lib/NamedModulesPlugin');
 const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
-const HotModuleReplacementPlugin = require('webpack/lib/HotModuleReplacementPlugin');
 const NoEmitOnErrorsPlugin = require('webpack/lib/NoEmitOnErrorsPlugin');
 const DefinePlugin = require('webpack/lib/DefinePlugin');
 const UglifyJsPlugin = require('webpack/lib/optimize/UglifyJsPlugin');
@@ -35,20 +34,15 @@ module.exports = (options) => {
         // ---------------------------------------------------------
         context: projectDir,
         entry: {
-            main: [
-                !options.build && 'eventsource-polyfill',           // Necessary to make hmr work on IE
-                !options.build && 'webpack-hot-middleware/client',  // For hot module reload
-                './src/client-renderer.js',
-            ].filter((val) => !!val),
-            deferrable: [
-                'svgxuse',  // Necessary because external svgs need a polyfill in IE
+            'server-renderer': [
+                './src/server-renderer.js',
             ],
         },
         output: {
             path: `${projectDir}/web/build/`,
             publicPath: `${config.publicPath}/`,
-            filename: !options.build ? '[name].js' : '[name].[chunkhash].js',
-            chunkFilename: !options.build ? 'chunk.[name].js' : 'chunk.[name].[chunkhash].js',
+            filename: '[name].js',
+            libraryTarget: 'this',
         },
         resolve: {
             alias: {
@@ -69,13 +63,12 @@ module.exports = (options) => {
                             'es2015',
                             'stage-3',
                             'react',
-                            !options.build ? 'react-hmre' : null,
                         ].filter((val) => val),
                         plugins: [
                             // Necessary for babel to run (replaces babel-polyfill)
                             'transform-runtime',
                             // Necessary for import() to work
-                            'syntax-dynamic-import',
+                            'dynamic-import-node',
                             // Transforms that optimize build
                             options.build ? 'transform-react-remove-prop-types' : null,
                             options.build ? 'transform-react-constant-elements' : null,
@@ -86,53 +79,55 @@ module.exports = (options) => {
                 // CSS files loader which enables the use of postcss & cssnext
                 {
                     test: /\.css$/,
-                    loader: ExtractTextPlugin.extract({
-                        fallback: {
-                            loader: 'style-loader',
-                            options: {
-                                fixUrls: options.env === 'dev',
-                            },
-                        },
-                        use: [
-                            {
-                                loader: 'css-loader',
+                    loader: options.build ?
+                        'skip-loader' :
+                        ExtractTextPlugin.extract({
+                            fallback: {
+                                loader: 'style-loader',
                                 options: {
-                                    sourceMap: true,
-                                    importLoaders: 1,
+                                    fixUrls: options.env === 'dev',
                                 },
                             },
-                            {
-                                loader: 'postcss-loader',
-                                options: {
-                                    plugins: [
-                                        // Let postcss parse @import statements
-                                        require('postcss-import')({
-                                            // Any non-relative imports are resolved to this path
-                                            path: './src/shared/styles/imports',
-                                        }),
-                                        // Add support for CSS mixins
-                                        require('postcss-mixins'),
-                                        // Add support for CSS variables using postcss-css-variables
-                                        // instead of cssnext one, which is more powerful
-                                        require('postcss-css-variables')(),
-                                        // Use CSS next, disabling some features
-                                        require('postcss-cssnext')({
-                                            features: {
-                                                overflowWrap: true,
-                                                rem: false,               // Not necessary for our browser support
-                                                colorRgba: false,         // Not necessary for our browser support
-                                                customProperties: false,  // We are using postcss-css-variables instead
-                                                autoprefixer: {
-                                                    browsers: ['last 2 versions', 'IE >= 11', 'android >= 4.4.4'],
-                                                    remove: false, // No problem disabling, we use prefixes when really necessary
+                            use: [
+                                {
+                                    loader: 'css-loader',
+                                    options: {
+                                        sourceMap: true,
+                                        importLoaders: 1,
+                                    },
+                                },
+                                {
+                                    loader: 'postcss-loader',
+                                    options: {
+                                        plugins: [
+                                            // Let postcss parse @import statements
+                                            require('postcss-import')({
+                                                // Any non-relative imports are resolved to this path
+                                                path: './src/shared/styles/imports',
+                                            }),
+                                            // Add support for CSS mixins
+                                            require('postcss-mixins'),
+                                            // Add support for CSS variables using postcss-css-variables
+                                            // instead of cssnext one, which is more powerful
+                                            require('postcss-css-variables')(),
+                                            // Use CSS next, disabling some features
+                                            require('postcss-cssnext')({
+                                                features: {
+                                                    overflowWrap: true,
+                                                    rem: false,               // Not necessary for our browser support
+                                                    colorRgba: false,         // Not necessary for our browser support
+                                                    customProperties: false,  // We are using postcss-css-variables instead
+                                                    autoprefixer: {
+                                                        browsers: ['last 2 versions', 'IE >= 11', 'android >= 4.4.4'],
+                                                        remove: false, // No problem disabling, we use prefixes when really necessary
+                                                    },
                                                 },
-                                            },
-                                        }),
-                                    ],
+                                            }),
+                                        ],
+                                    },
                                 },
-                            },
-                        ],
-                    }),
+                            ],
+                        }),
                 },
                 // Load SVG files and create an external sprite
                 // While this has a lot of advantages, such as not blocking the initial load, it can't contain
@@ -174,6 +169,7 @@ module.exports = (options) => {
                     test: /\.(png|jpg|jpeg|gif)$/,
                     loader: 'file-loader',
                     options: {
+                        emitFile: false,
                         name: 'images/[name].[hash:15].[ext]',
                     },
                 },
@@ -182,6 +178,7 @@ module.exports = (options) => {
                     test: /\.(mp4|webm|ogg|ogv)$/,
                     loader: 'file-loader',
                     options: {
+                        emitFile: false,
                         name: 'videos/[name].[hash:15].[ext]',
                     },
                 },
@@ -190,8 +187,16 @@ module.exports = (options) => {
                     test: /\.(eot|ttf|woff|woff2)$/,
                     loader: 'file-loader',
                     options: {
+                        emitFile: false,
                         name: 'fonts/[name].[hash:15].[ext]',
                     },
+                },
+                // Dependencies that do not work on server-side or are unnecessary for server-side rendering
+                {
+                    test: [
+                        // require.resolve('some-module'),
+                    ],
+                    loader: 'skip-loader',
                 },
             ],
         },
@@ -208,24 +213,21 @@ module.exports = (options) => {
                 'process.env': {
                     NODE_ENV: `"${!options.build ? 'development' : 'production'}"`,
                 },
-                __CLIENT__: true,
-                __SERVER__: false,
+                __CLIENT__: false,
+                __SERVER__: true,
             }),
             // Enabling gives us better debugging output
             new NamedModulesPlugin(),
-            // Ensures that hot reloading works
-            !options.build && new HotModuleReplacementPlugin(),
             // Alleviate cases where developers working on OSX, which does not follow strict path case sensitivity
             new CaseSensitivePathsPlugin(),
             // Move CSS styles to a separate file when NOT dev
             // At the moment we only generic a single app CSS file which is kind of bad, see: https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/332
-            new ExtractTextPlugin({
+            !options.build && new ExtractTextPlugin({
                 filename: 'app.[contenthash:15].css',
                 allChunks: true,
-                disable: !options.build,
             }),
             // External svg sprite plugin
-            new SvgStorePlugin(),
+            new SvgStorePlugin({ emit: false }),
             // Minify JS
             options.minify && new UglifyJsPlugin({
                 mangle: true,
@@ -236,6 +238,6 @@ module.exports = (options) => {
                 },
             }),
         ].filter((val) => val),
-        devtool: options.env === 'dev' ? 'eval-source-map' : 'source-map',
+        devtool: false,  // Not necessary because they are not supported in NodeJS (maybe they are?)
     };
 };
