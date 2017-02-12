@@ -7,7 +7,7 @@
 const config = {
     env: '',
     baseUrl: '',  // The base url of the website; used in stuff like shares
-    publicPath: '/',  // the webpack public path
+    publicPath: '/',  // The webpack public path
     googleTrackingId: '',  // Used for Google Analytics and other google services
 
     routesToPrefetch: ['about'],  // Array of routes to prefetch, see web/.index.html.js

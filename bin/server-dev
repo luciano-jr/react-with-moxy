@@ -10,11 +10,10 @@ const internalIp = require('internal-ip');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const express = require('express');
-const merge = require('lodash/merge');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
 const webpackServerConfig = require('../config/webpack/webpack-server.config.js');
 const validator = require('./util/validator');
-const parseWebpackStats = require('./util/parseWebpackStats');
+const buildData = require('./util/build-data');
 
 const projectDir = `${__dirname}/..`;
 
@@ -49,7 +48,7 @@ const argv = yargs
     describe: 'Any of the planify\'s reporters',
 })
 .example('$0', 'Serves the application for local development')
-.example('$0 --port 8081', 'Serves the application for local development in port 8081')
+.example('$0 --port 8081', 'Serves the application for local development on port 8081')
 .argv;
 
 const env = 'dev';  // This server is only for the dev environment
@@ -117,7 +116,7 @@ function setupClientWebpack(app) {
 function setupServerWebpack() {
     const config = webpackServerConfig({ env });
     const compiler = webpack(config);
-    const builtServerRendererFile = `${config.output.path}server-renderer.js`;
+    const serverRendererFile = `${config.output.path}server-renderer.js`;
     const result = {
         compiler,
     };
@@ -144,9 +143,9 @@ function setupServerWebpack() {
         }
 
         // Get the new server-renderer functions
-        delete require.cache[builtServerRendererFile];
-        result.render = require(builtServerRendererFile).default;  // eslint-disable-line global-require
-        result.renderError = require(builtServerRendererFile).renderError;  // eslint-disable-line global-require
+        delete require.cache[serverRendererFile];
+        result.render = require(serverRendererFile).default;  // eslint-disable-line global-require
+        result.renderError = require(serverRendererFile).renderError;  // eslint-disable-line global-require
     });
 
     return result;
@@ -182,18 +181,17 @@ function runServer() {
             return res.send('Client-side bundles are still being compiled, please refresh the page in a few seconds..');
         }
 
-        const buildData = merge(
-            parseWebpackStats(serverStats),
-            parseWebpackStats(clientStats)
+        const build = buildData.merge(
+            buildData.fromWebpackStats(serverStats),
+            buildData.fromWebpackStats(clientStats)
         );
 
-        serverRender({ req, res, buildData })
+        serverRender({ req, res, build })
         .catch((err) => setImmediate(() => next(err)));
     });
 
     // Error middleware to call "renderError" from the server-renderer
     app.use((err, req, res, next) => {
-        console.log('middleware');
         const { stats: clientStats } = clientWebpack;
         const { renderError: serverRenderError, stats: serverStats } = serverWebpack;
 
@@ -201,12 +199,12 @@ function runServer() {
             return next(err);
         }
 
-        const buildData = merge(
-            parseWebpackStats(serverStats),
-            parseWebpackStats(clientStats)
+        const build = buildData.merge(
+            buildData.fromWebpackStats(serverStats),
+            buildData.fromWebpackStats(clientStats)
         );
 
-        serverRenderError({ err, req, res, buildData })
+        serverRenderError({ err, req, res, build })
         .catch((err) => setImmediate(() => next(err)));
     });
 

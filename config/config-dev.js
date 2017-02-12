@@ -8,7 +8,7 @@ const baseConfig = require('./config');
 
 const config = merge({}, baseConfig, {
     env: 'dev',
-    publicPath: '/build',
+    publicPath: '/build/',
 });
 
 module.exports = config;

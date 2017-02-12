@@ -9,7 +9,9 @@ const planify = require('planify');
 const rimraf = require('rimraf');
 const webpack = require('webpack');
 const webpackClientConfig = require('../config/webpack/webpack-client.config.js');
+const webpackServerConfig = require('../config/webpack/webpack-server.config.js');
 const validator = require('./util/validator');
+const buildData = require('./util/build-data');
 
 const projectDir = `${__dirname}/..`;
 
@@ -34,8 +36,8 @@ const argv = yargs
     type: 'string',
     describe: 'Any of the planify\'s reporters',
 })
-.example('$0 prod', 'Builds the application for the prod environment')
-.example('$0 prod --no-minify', 'Builds the application for the prod environment without minification')
+.example('$0 dev', 'Builds the application for the dev environment')
+.example('$0 prod --no-minify', 'Builds the application for the prod environment without minifying code')
 
 .check((argv) => {
     if (!argv._[0]) {
@@ -62,7 +64,33 @@ function cleanBuild() {
     rimraf.sync(`${projectDir}/web/build`);
 }
 
-function buildClient() {
+function buildServer(data) {
+    return new Promise((resolve, reject) => {
+        const serverConfig = webpackServerConfig({ env, build: true, minify: argv.minify });
+
+        webpack(serverConfig, (err, stats) => {
+            if (err) {
+                return reject(err);
+            }
+
+            const statsJson = stats.toJson();
+            const statsStr = stats.toString({ chunks: false, children: false, modules: false, colors: true }).trim();
+
+            if (statsJson.errors.length) {
+                return reject(Object.assign(new Error('Webpack server-side build failed'), { detail: statsStr }));
+            }
+
+            // Store build data
+            data.serverBuild = buildData.fromWebpackStats(stats);
+
+            process.stdout.write(`${statsStr}\n\n`);
+
+            resolve();
+        });
+    });
+}
+
+function buildClient(data) {
     return new Promise((resolve, reject) => {
         const clientConfig = webpackClientConfig({ env, build: true, minify: argv.minify });
 
@@ -78,6 +106,9 @@ function buildClient() {
                 return reject(Object.assign(new Error('Webpack client-side build failed'), { detail: statsStr }));
             }
 
+            // Store build data
+            data.clientBuild = buildData.fromWebpackStats(stats);
+
             process.stdout.write(`${statsStr}\n\n`);
 
             resolve();
@@ -85,10 +116,15 @@ function buildClient() {
     });
 }
 
-function markBuildAsSuccessful() {
-    fs.writeFileSync(`${projectDir}/web/build/.env`, env);
+function markBuildAsSuccessful(data) {
+    const build = Object.assign(
+        buildData.merge(data.serverBuild, data.clientBuild),
+        { env }
+    );
 
-    process.stdout.write(`Created ${path.relative(process.cwd(), `${projectDir}/web/build/.${env}`)}.\n`);
+    fs.writeFileSync(`${projectDir}/web/build/.build.json`, JSON.stringify(build, null, 2));
+
+    process.stdout.write(`Created ${path.relative(process.cwd(), `${projectDir}/web/build/.build.json`)}.\n`);
 }
 
 // ---------------------------------------------------------
@@ -99,6 +135,7 @@ planify({ exit: true, reporter: argv.reporter })
 // Validate build environment
 .step(`Validating ${env} environment`, () => validator.validateEnvironment(env))
 .step('Removing previous build', () => cleanBuild())
-.step('Building client-side with webpack', { slow: 15000 }, () => buildClient())
-.step('Marking build as successful', () => markBuildAsSuccessful())
+.step('Building server-side with webpack', { slow: 15000 }, (data) => buildServer(data))
+.step('Building client-side with webpack', { slow: 15000 }, (data) => buildClient(data))
+.step('Marking build as successful', (data) => markBuildAsSuccessful(data))
 .run();

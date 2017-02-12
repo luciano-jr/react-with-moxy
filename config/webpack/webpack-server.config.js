@@ -13,7 +13,6 @@ const NamedModulesPlugin = require('webpack/lib/NamedModulesPlugin');
 const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 const NoEmitOnErrorsPlugin = require('webpack/lib/NoEmitOnErrorsPlugin');
 const DefinePlugin = require('webpack/lib/DefinePlugin');
-const UglifyJsPlugin = require('webpack/lib/optimize/UglifyJsPlugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
@@ -40,7 +39,7 @@ module.exports = (options) => {
         },
         output: {
             path: `${projectDir}/web/build/`,
-            publicPath: `${config.publicPath}/`,
+            publicPath: `${config.publicPath.replace(/\/+$/, '')}/`,
             filename: '[name].js',
             libraryTarget: 'this',
         },
@@ -228,15 +227,6 @@ module.exports = (options) => {
             }),
             // External svg sprite plugin
             new SvgStorePlugin({ emit: false }),
-            // Minify JS
-            options.minify && new UglifyJsPlugin({
-                mangle: true,
-                compress: {
-                    drop_console: true,   // Drop console.* statements
-                    drop_debugger: true,  // Drop debugger statements
-                    screw_ie8: true,      // We don't support IE8 and lower, this further improves compression
-                },
-            }),
         ].filter((val) => val),
         devtool: false,  // Not necessary because they are not supported in NodeJS (maybe they are?)
     };

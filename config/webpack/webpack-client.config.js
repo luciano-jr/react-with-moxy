@@ -46,7 +46,7 @@ module.exports = (options) => {
         },
         output: {
             path: `${projectDir}/web/build/`,
-            publicPath: `${config.publicPath}/`,
+            publicPath: `${config.publicPath.replace(/\/+$/, '')}/`,
             filename: !options.build ? '[name].js' : '[name].[chunkhash].js',
             chunkFilename: !options.build ? 'chunk.[name].js' : 'chunk.[name].[chunkhash].js',
         },
@@ -90,7 +90,7 @@ module.exports = (options) => {
                         fallback: {
                             loader: 'style-loader',
                             options: {
-                                fixUrls: options.env === 'dev',
+                                fixUrls: !options.build,
                             },
                         },
                         use: [
@@ -201,7 +201,7 @@ module.exports = (options) => {
             // Configure debug & minimize
             new LoaderOptionsPlugin({
                 minimize: options.minify,
-                debug: options.env === 'dev',
+                debug: !options.build,
             }),
             // Reduce react file size as well as other libraries
             new DefinePlugin({
@@ -230,12 +230,13 @@ module.exports = (options) => {
             options.minify && new UglifyJsPlugin({
                 mangle: true,
                 compress: {
+                    warnings: false,      // Mute warnings
                     drop_console: true,   // Drop console.* statements
                     drop_debugger: true,  // Drop debugger statements
                     screw_ie8: true,      // We don't support IE8 and lower, this further improves compression
                 },
             }),
         ].filter((val) => val),
-        devtool: options.env === 'dev' ? 'eval-source-map' : 'source-map',
+        devtool: options.build ? 'source-map' : 'eval-source-map',
     };
 };

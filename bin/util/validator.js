@@ -20,8 +20,12 @@ function validateEnvironment(env) {
 }
 
 function validateBuild(env) {
+    let build;
+
     try {
-        const buildEnv = fs.readFileSync(`${projectDir}/web/build/.env`);
+        build = JSON.parse(fs.readFileSync(`${projectDir}/web/build/.build.json`)).env;
+
+        const buildEnv = build.env || 'N/A';
 
         if (env !== buildEnv) {
             throw new Error('Build env mismatch', {

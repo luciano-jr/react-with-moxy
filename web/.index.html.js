@@ -1,5 +1,5 @@
-export default function index({ head, rootHtml, config, buildData }) {
-    const { assets, routes } = buildData;
+export default function index({ head, rootHtml, config, build }) {
+    const { assets, routes } = build;
     const { routesToPrefetch } = config;
 
     // Warn if the any of the routes to prefetch no longer exist

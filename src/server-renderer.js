@@ -5,7 +5,7 @@ import Helmet from 'react-helmet';
 import config from 'config';
 import App from './App';
 import buildRoutes from './pages/buildRoutes';
-import htmlTemplate from '../web/.index.html';
+import renderDocument from '../web/.index.html';
 
 function matchRoute(params) {
     return new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ const routes = {
     childRoutes: buildRoutes(),
 };
 
-export default async function render({ req, res, buildData }) {
+export default async function render({ req, res, build }) {
     // Match req against our routes
     const { redirectLocation, renderProps } = await matchRoute({
         history: createMemoryHistory(),
@@ -53,19 +53,19 @@ export default async function render({ req, res, buildData }) {
             createElement={ (Component, props) => <Component { ...props } serverContext={ { req, res } } /> } />
     );
 
-    // Render whole HTML
-    const html = htmlTemplate({
+    // Render document
+    const html = renderDocument({
         head: Helmet.rewind(),
         rootHtml,
         config,
-        buildData,
+        build,
     });
 
     // Send HTML
     res.send(html);
 }
 
-export async function renderError({ err, req, res, buildData }) {
+export async function renderError({ err, req, res, build }) {
     // Match req against our routes
     const { redirectLocation, renderProps } = await matchRoute({
         history: createMemoryHistory(),
@@ -78,7 +78,7 @@ export async function renderError({ err, req, res, buildData }) {
         return res.redirect(redirectLocation.pathname + redirectLocation.search);
     }
     // If there's no error page, render a generic one
-    if (true || !renderProps) {
+    if (!renderProps) {
         throw err;
     }
 
@@ -89,12 +89,12 @@ export async function renderError({ err, req, res, buildData }) {
             createElement={ (Component, props) => <Component { ...props } err={ err } serverContext={ { req, res, err } } /> } />
     );
 
-    // Render whole HTML
-    const html = htmlTemplate({
+    // Render document
+    const html = renderDocument({
         head: Helmet.rewind(),
         rootHtml,
         config,
-        buildData,
+        build,
     });
 
     // Send HTML

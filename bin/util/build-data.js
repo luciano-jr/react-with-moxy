@@ -1,8 +1,10 @@
 'use strict';
 
+const path = require('path');
 const reduce = require('lodash/reduce');
+const _merge = require('lodash/merge');
 
-function parseWebpackStats(stats) {
+function fromWebpackStats(stats) {
     stats = stats.toJson();
 
     // Gather assets
@@ -11,7 +13,7 @@ function parseWebpackStats(stats) {
         assets.forEach((asset) => {
             const key = asset.replace(/\.[a-z0-9]{15,32}(\.[a-z0-9]+)$/, '$1');  // Remove hash
 
-            aggregatedAssets[key] = stats.publicPath + asset;
+            aggregatedAssets[key] = path.join(stats.publicPath, asset);
         });
 
         return aggregatedAssets;
@@ -25,7 +27,7 @@ function parseWebpackStats(stats) {
                 const match = origin.module.match(/src\/pages\/([a-z][a-z-_/]+)\/index\.js$/);
 
                 if (match) {
-                    routes[match[1]] = stats.publicPath + chunk.files[0];
+                    routes[match[1]] = path.join(stats.publicPath, chunk.files[0]);
                 }
 
                 return match;
@@ -41,4 +43,12 @@ function parseWebpackStats(stats) {
     };
 }
 
-module.exports = parseWebpackStats;
+function merge(serverBuildData, clientBuildData) {
+    // No fancy merging for now..
+    return _merge(serverBuildData, clientBuildData);
+}
+
+module.exports = {
+    fromWebpackStats,
+    merge,
+};
