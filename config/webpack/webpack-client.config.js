@@ -36,8 +36,9 @@ module.exports = (options) => {
         context: projectDir,
         entry: {
             main: [
-                !options.build && 'eventsource-polyfill',           // Necessary to make hmr work on IE
-                !options.build && 'webpack-hot-middleware/client',  // For hot module reload
+                !options.build && 'eventsource-polyfill',  // Necessary to make hmr work on IE
+                !options.build && 'react-hot-loader/patch',  // For hot module reload
+                !options.build && 'webpack-hot-middleware/client?reload=true',  // For hot module reload
                 './src/client-renderer.js',
             ].filter((val) => !!val),
             deferrable: [
@@ -60,7 +61,7 @@ module.exports = (options) => {
             rules: [
                 // Babel loader enables us to use new ECMA features + react's JSX
                 {
-                    test: /\.jsx?$/,
+                    test: /\.js$/,
                     exclude: /node_modules/,
                     loader: 'babel-loader',
                     options: {
@@ -69,13 +70,14 @@ module.exports = (options) => {
                             'es2015',
                             'stage-3',
                             'react',
-                            !options.build ? 'react-hmre' : null,
                         ].filter((val) => val),
                         plugins: [
                             // Necessary for babel to run (replaces babel-polyfill)
                             'transform-runtime',
                             // Necessary for import() to work
                             'syntax-dynamic-import',
+                            // <3 hot module reload
+                            !options.build ? 'react-hot-loader/babel' : null,
                             // Transforms that optimize build
                             options.build ? 'transform-react-remove-prop-types' : null,
                             options.build ? 'transform-react-constant-elements' : null,
@@ -210,6 +212,7 @@ module.exports = (options) => {
                 },
                 __CLIENT__: true,
                 __SERVER__: false,
+                __DEV__: !options.build,
             }),
             // Enabling gives us better debugging output
             new NamedModulesPlugin(),

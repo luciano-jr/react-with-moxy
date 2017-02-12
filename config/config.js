@@ -6,11 +6,14 @@
 
 const config = {
     env: '',
-    baseUrl: '',  // The base url of the website; used in stuff like shares
-    publicPath: '/',  // The webpack public path
+    publicPath: '/build/',  // The webpack public path
 
-    routesToPrefetch: ['about'],  // Array of routes to prefetch, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ
-    googleTrackingId: '',  // Used for Google Analytics and other google services
+    // Array of routes to prefetch, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ
+    // These names are folders relative to src/pages
+    routesToPrefetch: ['about'],
+
+    // Gooogle tracking id used for Google Analytics  and other google services
+    googleTrackingId: '',
 };
 
 module.exports = config;

@@ -1,11 +1,18 @@
+import { difference } from 'lodash';
+
 export default function index({ head, rootHtml, config, buildManifest }) {
-    const { assets, routes } = buildManifest;
+    const { assets, routes: { sync: syncRoutes, async: asyncRoutes } } = buildManifest;
     const { routesToPrefetch } = config;
 
     // Warn if the any of the routes to prefetch no longer exist
-    routesToPrefetch.forEach((route) => {
-        !routes[route] && console.warn(`[index.html] Unknown route "${route}" declared in \`config.routesToPrefetch\``);
-    });
+    if (__DEV__) {
+        routesToPrefetch
+        .forEach((route) => {
+            if (!syncRoutes[route] && !asyncRoutes[route]) {
+                console.warn(`[index.html.js] Unknown route "${route}" declared in \`config.routesToPrefetch\``);
+            }
+        });
+    }
 
     return `
         <!DOCTYPE html>
@@ -24,7 +31,7 @@ export default function index({ head, rootHtml, config, buildManifest }) {
                 <link id="app-css" rel="stylesheet" href="${assets['app.css']}">
 
                 <!-- Prefetch routes -->
-                ${ routesToPrefetch.map((route) => routes[route] ? `<link rel="prefetch" href="${routes[route]}">` : '').join('\n') }
+                ${ routesToPrefetch.map((route) => asyncRoutes[route] ? `<link rel="prefetch" href="${routes[route]}">` : '').join('\n') }
             </head>
             <body>
                 <!-- Root element where app goes -->

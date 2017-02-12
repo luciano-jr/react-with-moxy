@@ -53,7 +53,7 @@ module.exports = (options) => {
             rules: [
                 // Babel loader enables us to use new ECMA features + react's JSX
                 {
-                    test: /\.jsx?$/,
+                    test: /\.js$/,
                     exclude: /node_modules/,
                     loader: 'babel-loader',
                     options: {
@@ -214,6 +214,7 @@ module.exports = (options) => {
                 },
                 __CLIENT__: false,
                 __SERVER__: true,
+                __DEV__: !options.build,
             }),
             // Enabling gives us better debugging output
             new NamedModulesPlugin(),

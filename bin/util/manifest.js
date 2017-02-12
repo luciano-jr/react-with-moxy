@@ -4,6 +4,8 @@ const path = require('path');
 const reduce = require('lodash/reduce');
 const _merge = require('lodash/merge');
 
+const routeRegExp = /src\/pages\/([a-z][a-z-_/]+)\/index\.js$/;
+
 function fromWebpackStats(stats) {
     stats = stats.toJson();
 
@@ -19,15 +21,15 @@ function fromWebpackStats(stats) {
         return aggregatedAssets;
     }, {});
 
-    // Gather chunks
-    const routes = stats.chunks
-    .reduce((routes, chunk) => {
+    // Gather async routes
+    const asyncRoutes = stats.chunks.reduce((routes, chunk) => {
         if (!chunk.entry && chunk.origins) {
             chunk.origins.some((origin) => {
-                const match = origin.module.match(/src\/pages\/([a-z][a-z-_/]+)\/index\.js$/);
+                const match = origin.module.match(routeRegExp);
+                const name = match && match[1];
 
-                if (match) {
-                    routes[match[1]] = path.join(stats.publicPath, chunk.files[0]);
+                if (name) {
+                    routes[name] = path.join(stats.publicPath, chunk.files[0]);
                 }
 
                 return match;
@@ -37,9 +39,28 @@ function fromWebpackStats(stats) {
         return routes;
     }, {});
 
+    // Gather sync routes
+    const syncRoutes = stats.modules.reduce((routes, module) => {
+        module.reasons.forEach((reason) => {
+            const match = reason.module.match(routeRegExp);
+            const name = match && match[1];
+
+            if (name && !asyncRoutes[name]) {
+                routes[name] = true;
+            }
+
+            return match;
+        });
+
+        return routes;
+    }, {});
+
     return {
         assets,
-        routes,
+        routes: {
+            sync: syncRoutes,
+            async: asyncRoutes,
+        },
     };
 }
 

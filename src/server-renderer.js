@@ -3,8 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { match, RouterContext, createMemoryHistory } from 'react-router';
 import Helmet from 'react-helmet';
 import config from 'config';
-import App from './App';
-import buildRoutes from './pages/buildRoutes';
+import { buildRoutes } from './App';
 import renderDocument from '../web/.index.html';
 
 function matchRoute(params) {
@@ -23,11 +22,7 @@ function matchRoute(params) {
 // ---------------------------------------------------------
 
 // Build our routes
-const routes = {
-    path: '/',
-    component: App,
-    childRoutes: buildRoutes(),
-};
+const routes = buildRoutes();
 
 export default async function render({ req, res, buildManifest }) {
     // Match req against our routes

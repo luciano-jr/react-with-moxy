@@ -3,8 +3,8 @@ import React from 'react';
 import { render } from 'react-dom';
 import { match, Router, browserHistory } from 'react-router';
 import nprogress from 'nprogress';
-import App from './App';
-import buildRoutes from './pages/buildRoutes';
+import { AppContainer } from 'react-hot-loader';
+import { buildRoutes } from './App';
 
 console.info('[client-renderer] App config is', config);
 
@@ -20,17 +20,15 @@ browserHistory.listen((location) => {
 nprogress.configure({ minimum: 0.15, showSpinner: false, speed: 500 });
 
 // Build our routes
-const routes = {
-    path: '/',
-    component: App,
-    childRoutes: buildRoutes(),
-};
+let routes = buildRoutes();
 
 // Render our app!
 // Need to use match() because of async routes, see https://github.com/ReactTraining/react-router/blob/master/docs/guides/ServerRendering.md#async-routes
 match({ history: browserHistory, routes }, (error, redirectLocation, renderProps) => {
     render(
-        <Router { ...renderProps } routes={ routes }/>,
+        <AppContainer>
+            <Router { ...renderProps } history={ browserHistory } routes={ routes } />
+        </AppContainer>,
         document.getElementById('root'),
         () => {
             // Remove server-side rendered CSS when developing, otherwise CSS styles would be duplicated
@@ -40,3 +38,32 @@ match({ history: browserHistory, routes }, (error, redirectLocation, renderProps
         }
     );
 });
+
+if (__DEV__ && module.hot) {
+    // Hot module reload for App and its routes
+    module.hot.accept('./App', () => {
+        const buildRoutes = require('./App').buildRoutes;
+
+        routes = buildRoutes();
+
+        render(
+            <AppContainer>
+                <Router history={ browserHistory } routes={ routes } />
+            </AppContainer>,
+            document.getElementById('root'),
+        );
+    });
+
+    // Brace yourselves, hack below!
+    // While HMRE works, react-router does a console.error because it's being re-rendered
+    // We monkey-patch console.error to ignore that error.. I know that it's a hack, but it works!
+    // See: https://github.com/gaearon/react-hot-loader/issues/298
+    // See: https://github.com/ReactTraining/react-router/issues/2704
+    const originalError = console.error;
+
+    console.error = (...args) => {
+        if (typeof args[0] !== 'string' || args[0].indexOf('You cannot change <Router routes>;') === -1) {
+            originalError.apply(console, args);
+        }
+    };
+}

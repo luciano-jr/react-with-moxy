@@ -8,7 +8,6 @@ const baseConfig = require('./config');
 
 const config = merge({}, baseConfig, {
     env: 'prod',
-    publicPath: '/',
 
     googleTrackingId: 'UA-XXXXXX',
 });

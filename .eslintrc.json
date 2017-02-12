@@ -9,6 +9,7 @@
     "globals": {
         "process": false,
         "__SERVER__": false,
-        "__CLIENT__": false
+        "__CLIENT__": false,
+        "__DEV__": false
     }
 }
