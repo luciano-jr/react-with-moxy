@@ -11,5 +11,7 @@
 }
 
 .svg svg {
-    vertical-align: top;
+    width: inherit;
+    height: inherit;
+    display: block;  /* Remove little margin between the svg and its parent */
 }
