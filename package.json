@@ -34,6 +34,7 @@
     "internal-ip": "^1.2.0",
     "lodash": "^4.17.4",
     "nprogress": "^0.2.0",
+    "pify": "^2.3.0",
     "planify": "^1.5.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",

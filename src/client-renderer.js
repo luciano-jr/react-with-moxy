@@ -1,7 +1,7 @@
 import config from 'config';
 import React from 'react';
 import { render } from 'react-dom';
-import { match, Router, browserHistory } from 'react-router';
+import { match, Router, browserHistory as history } from 'react-router';
 import nprogress from 'nprogress';
 import { AppContainer } from 'react-hot-loader';
 import { buildRoutes } from './App';
@@ -9,7 +9,7 @@ import { buildRoutes } from './App';
 console.info('[client-renderer] App config is', config);
 
 // Track page views for this SPA in Google Analytics
-browserHistory.listen((location) => {
+history.listen((location) => {
     if (window.ga) {
         window.ga('set', 'page', `${location.pathname + location.search}`);
         window.ga('send', 'pageview');
@@ -24,10 +24,10 @@ let routes = buildRoutes();
 
 // Render our app!
 // Need to use match() because of async routes, see https://github.com/ReactTraining/react-router/blob/master/docs/guides/ServerRendering.md#async-routes
-match({ history: browserHistory, routes }, (error, redirectLocation, renderProps) => {
+match({ history, routes }, (error, redirectLocation, renderProps) => {
     render(
         <AppContainer>
-            <Router { ...renderProps } history={ browserHistory } routes={ routes } />
+            <Router { ...renderProps } history={ history } routes={ routes } />
         </AppContainer>,
         document.getElementById('root'),
         () => {
@@ -48,7 +48,7 @@ if (__DEV__ && module.hot) {
 
         render(
             <AppContainer>
-                <Router history={ browserHistory } routes={ routes } />
+                <Router history={ history } routes={ routes } />
             </AppContainer>,
             document.getElementById('root'),
         );

@@ -3,34 +3,19 @@ import { renderToString } from 'react-dom/server';
 import { match, RouterContext, createMemoryHistory } from 'react-router';
 import Helmet from 'react-helmet';
 import config from 'config';
+import pify from 'pify';
 import { buildRoutes } from './App';
 import renderDocument from '../web/.index.html';
 
-function matchRoute(params) {
-    return new Promise((resolve, reject) => {
-        // Match against our routes and build the result
-        match(params, (error, redirectLocation, renderProps) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve({ redirectLocation, renderProps });
-            }
-        });
-    });
-}
-
-// ---------------------------------------------------------
+const matchAsync = pify(match, { multiArgs: true });
 
 // Build our routes
 const routes = buildRoutes();
 
 export default async function render({ req, res, buildManifest }) {
     // Match req against our routes
-    const { redirectLocation, renderProps } = await matchRoute({
-        history: createMemoryHistory(),
-        routes,
-        location: req.url,
-    });
+    const history = createMemoryHistory();
+    const [redirectLocation, renderProps] = await matchAsync({ history, routes, location: req.url });
 
     // Is it to redirect?
     if (redirectLocation) {
@@ -62,11 +47,8 @@ export default async function render({ req, res, buildManifest }) {
 
 export async function renderError({ err, req, res, buildManifest }) {
     // Match req against our routes
-    const { redirectLocation, renderProps } = await matchRoute({
-        history: createMemoryHistory(),
-        routes,
-        location: '/internal-error',
-    });
+    const history = createMemoryHistory();
+    const [redirectLocation, renderProps] = await matchAsync({ history, routes, location: '/internal-error' });
 
     // Is it to redirect?
     if (redirectLocation) {
