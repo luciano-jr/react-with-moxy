@@ -142,6 +142,7 @@ function setupServerWebpack() {
         try {
             result.render = require(serverRendererFile).default;  // eslint-disable-line global-require
             result.renderError = require(serverRendererFile).renderError;  // eslint-disable-line global-require
+            result.requireError = null;
         } catch (err) {
             result.render = result.renderError = null;
             result.requireError = err;
