@@ -160,14 +160,17 @@ function runServer() {
     const app = express();
 
     // Configure express app
-    app.set('etag', false);  // Not really necessary and disabling it increases performance
+    app.set('etag', false);  // Not necessary by default
 
     // When doing local development, we want both the client and server to be re-compiled
     const clientWebpack = setupClientWebpack(app);
     const serverWebpack = setupServerWebpack();
 
-    // Public files are served as usually
-    app.use('/', express.static('web'));
+    // Public files are served without any cache
+    app.use('/', express.static('web', {
+        maxAge: 0,
+        etag: false,
+    }));
 
     // If it's not a public file, then try to render it using the server-renderer
     app.get('*', (req, res, next) => {

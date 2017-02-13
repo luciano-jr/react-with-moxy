@@ -54,7 +54,7 @@ function runServer() {
 
     // Configure express app
     app.set('env', 'production');  // Enable production mode
-    app.set('etag', false);  // Not really necessary and disabling it increases performance
+    app.set('etag', false);  // Not necessary by default
     app.set('x-powered-by', false);  // Remove x-powered-by header
 
     // Enable gzip compression

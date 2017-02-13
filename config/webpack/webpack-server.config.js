@@ -223,7 +223,7 @@ module.exports = (options) => {
             // Move CSS styles to a separate file when NOT dev
             // At the moment we only generic a single app CSS file which is kind of bad, see: https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/332
             !options.build && new ExtractTextPlugin({
-                filename: 'app.[contenthash:15].css',
+                filename: 'app.css',
                 allChunks: true,
             }),
             // External svg sprite plugin
