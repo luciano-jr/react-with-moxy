@@ -98,10 +98,7 @@ function setupClientWebpack(app) {
     // Attach dev + hot middlewares to our express app
     const webpackDevMiddlewareInstance = webpackDevMiddleware(compiler, {
         publicPath: config.output.publicPath,
-        watchOptions: {
-            aggregateTimeout: 300,  // Wait so long for more changes
-            poll: argv.polling,
-        },
+        watchOptions: { poll: argv.polling },
         noInfo: true,
         quiet: true,
         lazy: false,
@@ -130,10 +127,7 @@ function setupServerWebpack() {
     });
 
     // Complete on each change, storing the render function
-    compiler.watch({
-        aggregateTimeout: 300,  // Wait so long for more changes
-        poll: argv.polling,
-    }, (err) => {
+    compiler.watch({ poll: argv.polling }, (err) => {
         // Fatal errors
         if (err) {
             process.stdout.write('Webpack server-side build failed..\n');

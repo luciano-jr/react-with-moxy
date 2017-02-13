@@ -55,7 +55,7 @@ if (__DEV__ && module.hot) {
     });
 
     // Brace yourselves, hack below!
-    // While HMRE works, react-router does a console.error because it's being re-rendered
+    // While HMRE works, react-router does a console.error because it's routes prop changed
     // We monkey-patch console.error to ignore that error.. I know that it's a hack, but it works!
     // See: https://github.com/gaearon/react-hot-loader/issues/298
     // See: https://github.com/ReactTraining/react-router/issues/2704
