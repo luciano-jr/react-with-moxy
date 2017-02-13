@@ -6,7 +6,7 @@
 
 const config = {
     env: '',
-    publicPath: '/build/',  // The webpack public path
+    publicPath: '/build',  // The webpack public path
 
     // Array of routes to prefetch, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ
     // These names are folders relative to src/pages
