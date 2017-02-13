@@ -31,8 +31,12 @@ class InternalError extends PureComponent {
     }
 }
 
+InternalError.defaultProps = {
+    err: new Error('Oops, something went wrong'),
+};
+
 InternalError.propTypes = {
-    err: PropTypes.object.isRequired,
+    err: PropTypes.object,
     serverContext: PropTypes.object,
 };
 
