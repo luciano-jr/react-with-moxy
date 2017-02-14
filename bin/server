@@ -25,7 +25,7 @@ const argv = yargs
 .option('hostname', {
     alias: 'H',
     type: 'string',
-    default: process.env.HOSTNAME || '127.0.0.1',
+    default: process.env.HOSTNAME || '0.0.0.0',
 })
 .option('port', {
     alias: 'p',
