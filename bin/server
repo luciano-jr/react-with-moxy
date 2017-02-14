@@ -21,15 +21,16 @@ const argv = yargs
 .help('help').alias('help', 'h')
 .usage('Usage: ./$0 [options]')
 .demand(0, 0)
+.env('SERVER')
 .option('hostname', {
     alias: 'H',
     type: 'string',
-    default: '127.0.0.1',  // Defaults to localhost for safety
+    default: process.env.HOSTNAME || '127.0.0.1',
 })
 .option('port', {
     alias: 'p',
     type: 'number',
-    default: 8080,
+    default: Number(process.env.PORT) || 3000,
 })
 .option('gzip', {
     alias: 'gz',
