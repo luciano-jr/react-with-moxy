@@ -63,10 +63,11 @@ function runServer() {
 
     // Public files in /build have the following pattern: <file>.<hash>.<extension>
     // Therefore it's safe to cache them indefinitely
-    app.use('/build', express.static('web', {
+    app.use('/build', express.static('web/build', {
         maxAge: 31557600000,  // 1 year
         etag: false,  // Not necessary
         index: false,  // Disable directory listing
+        fallthrough: false,  // Ensure that requests to /build do not propagate to other middleware
     }));
 
     // The rest of the public files are served using a more modest approach using etags
@@ -105,7 +106,7 @@ function runServer() {
                 return reject(err);
             }
 
-            process.stdout.write('\nServer is now up and running, press CTRL-C to stop.');
+            process.stdout.write('\nServer is now up and running, press CTRL-C to stop.\n');
         });
     });
 }
