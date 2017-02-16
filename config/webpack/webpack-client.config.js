@@ -30,9 +30,6 @@ module.exports = (options) => {
     const config = require(`${projectDir}/config/config-${options.env}`);
 
     return {
-        // ---------------------------------------------------------
-        // Webpack configuration
-        // ---------------------------------------------------------
         context: projectDir,
         entry: {
             main: [
