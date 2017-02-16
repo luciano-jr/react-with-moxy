@@ -1,7 +1,8 @@
 import config from 'config';
 import React from 'react';
 import { render } from 'react-dom';
-import { match, Router, browserHistory as history } from 'react-router';
+import { match, Router, browserHistory as history, applyRouterMiddleware } from 'react-router';
+import { useScroll } from 'react-router-scroll';
 import nprogress from 'nprogress';
 import { AppContainer } from 'react-hot-loader';
 import { buildRoutes } from './App';
@@ -27,7 +28,8 @@ let routes = buildRoutes();
 match({ history, routes }, (error, redirectLocation, renderProps) => {
     render(
         <AppContainer>
-            <Router { ...renderProps } history={ history } routes={ routes } />
+            <Router { ...renderProps } history={ history } routes={ routes }
+                render={ applyRouterMiddleware(useScroll()) } />
         </AppContainer>,
         document.getElementById('root'),
         () => {

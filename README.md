@@ -18,6 +18,7 @@ TODO:
 
 ### Misc
 
+- react-router-scroll
 - external-svg-sprite-loader
 - husky
 - helmet
