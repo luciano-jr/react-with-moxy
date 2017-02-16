@@ -26,11 +26,13 @@ export default async function render({ req, res, buildManifest }) {
         return res.status(404).end();
     }
 
+    const serverContext = { req, res };
+
     // Render HTML that goes to into <div id="root"></div>
     const rootHtml = renderToString(
         <RouterContext
             { ...renderProps }
-            createElement={ (Component, props) => <Component { ...props } serverContext={ { req, res } } /> } />
+            createElement={ (Component, props) => <Component { ...props } serverContext={ serverContext } /> } />
     );
 
     // Render document
@@ -59,11 +61,13 @@ export async function renderError({ err, req, res, buildManifest }) {
         throw err;
     }
 
+    const serverContext = { req, res, err };
+
     // Render page that goes to into <div id="root"></div>
     const rootHtml = renderToString(
         <RouterContext
             { ...renderProps }
-            createElement={ (Component, props) => <Component { ...props } err={ err } serverContext={ { req, res, err } } /> } />
+            createElement={ (Component, props) => <Component { ...props } err={ err } serverContext={ serverContext } /> } />
     );
 
     // Render document
