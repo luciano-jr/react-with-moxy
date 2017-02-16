@@ -47,6 +47,11 @@ module.exports = (options) => {
             },
         },
         target: 'node',  // Need this for certain libraries such as 'axios' to work
+        // Need this to properly set __dirname and __filename
+        node: {
+            __dirname: false,
+            __filename: false,
+        },
         module: {
             rules: [
                 // Babel loader enables us to use new ECMA features + react's JSX
