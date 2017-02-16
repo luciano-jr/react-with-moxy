@@ -46,6 +46,7 @@ module.exports = (options) => {
                 shared: `${projectDir}/src/shared`,
             },
         },
+        target: 'node',  // Need this for certain libraries such as 'axios' to work
         module: {
             rules: [
                 // Babel loader enables us to use new ECMA features + react's JSX
