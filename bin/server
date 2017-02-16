@@ -98,7 +98,7 @@ function runServer() {
 
         process.stdout.write(`Environment:               ${env}\n`);
         process.stdout.write(`Server address:            http://${argv.hostname}:${argv.port}\n`);
-        !isLocalOnly && process.stdout.write(`LAN server address:        http://${internalIp.v4()}\n`);
+        !isLocalOnly && process.stdout.write(`LAN server address:        http://${internalIp.v4()}:${argv.port}\n`);
         process.stdout.write(`Gzip compression:          ${argv.gzip ? 'on' : 'off'}\n`);
 
         app.listen(argv.port, argv.hostname, (err) => {
