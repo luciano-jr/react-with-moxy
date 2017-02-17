@@ -6,7 +6,6 @@
     "lint": "./bin/lint",
     "build": "./bin/build",
     "build:dev": "./bin/build dev",
-    "build:qa": "./bin/build qa",
     "build:prod": "./bin/build prod",
     "start": "./bin/server",
     "start:dev": "./bin/server-dev",

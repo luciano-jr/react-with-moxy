@@ -20,11 +20,11 @@ export default function index({ head, rootHtml, config, buildManifest }) {
             <head>
                 <meta charset="utf-8">
                 <meta http-equiv="x-ua-compatible" content="ie=edge">
+                <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1" />
+
                 ${head.title.toString()}
                 ${head.meta.toString()}
                 ${head.link.toString()}
-
-                <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
 
                 <!-- Roboto from Google-->
                 <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
