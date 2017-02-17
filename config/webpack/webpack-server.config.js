@@ -31,6 +31,7 @@ module.exports = (options) => {
         context: projectDir,
         entry: {
             'server-renderer': [
+                'babel-polyfill',  // Necessary for babel to run (replaces babel-polyfill)
                 './src/server-renderer.js',
             ],
         },

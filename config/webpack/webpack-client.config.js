@@ -36,6 +36,7 @@ module.exports = (options) => {
                 !options.build && 'eventsource-polyfill',  // Necessary to make hmr work on IE
                 !options.build && 'react-hot-loader/patch',  // For hot module reload
                 !options.build && 'webpack-hot-middleware/client?reload=true',  // For hot module reload
+                'babel-polyfill',  // Necessary for babel to run (replaces babel-polyfill)
                 './src/client-renderer.js',
             ].filter((val) => !!val),
             deferrable: [
