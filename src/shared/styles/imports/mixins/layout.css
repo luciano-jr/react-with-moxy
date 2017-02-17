@@ -2,7 +2,7 @@
 
 @define-mixin layout-main $selector, $container-selector {
     $selector {
-        flex: 1 0 100%;
+        flex-grow: 1;
         background-color: var(--color-alabaster);
     }
 
