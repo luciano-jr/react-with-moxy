@@ -83,16 +83,21 @@ function runServer() {
     const buildManifest = require(`${projectDir}/web/build/.manifest.json`);  // eslint-disable-line global-require
     const env = buildManifest.env || 'N/A';
 
-    app.get('*', (req, res, next) => {
-        serverRender({ req, res, buildManifest })
-        .catch((err) => setImmediate(() => next(err)));
-    });
+    app.get('*',
+        (req, res, next) => {
+            serverRender({ req, res, buildManifest })
+            .catch((err) => setImmediate(() => next(err)));
+        },
+        // Error middleware to call "renderError()" from the server-renderer
+        (err, req, res, next) => {
+            if (!err) {
+                return next(err);
+            }
 
-    // Error middleware to call "renderError" from the server-renderer
-    app.use((err, req, res, next) => {
-        serverRenderError({ err, req, res, buildManifest })
-        .catch((err) => setImmediate(() => next(err)));
-    });
+            serverRenderError({ err, req, res, buildManifest })
+            .catch((err) => setImmediate(() => next(err)));
+        }
+    );
 
     // Start server
     return new Promise((resolve, reject) => {

@@ -177,49 +177,54 @@ function runServer() {
     }));
 
     // If it's not a public file, then try to render it using the server-renderer
-    app.get('*', (req, res, next) => {
-        const { stats: clientStats } = clientWebpack;
-        const { render: serverRender, stats: serverStats, requireError } = serverWebpack;
+    app.get('*',
+        (req, res, next) => {
+            const { stats: clientStats } = clientWebpack;
+            const { render: serverRender, stats: serverStats, requireError } = serverWebpack;
 
-        // Check if the last require failed
-        if (requireError) {
-            return next(requireError);
+            // Check if the last require failed
+            if (requireError) {
+                return next(requireError);
+            }
+
+            // Still building?
+            if (!serverStats || !serverRender) {
+                return res.send('Server-side bundle is still being compiled, please refresh the page in a few seconds..');
+            }
+            if (!clientStats) {
+                return res.send('Client-side bundles are still being compiled, please refresh the page in a few seconds..');
+            }
+
+            const buildManifest = manifest.merge(
+                manifest.fromWebpackStats(serverStats),
+                manifest.fromWebpackStats(clientStats)
+            );
+
+            serverRender({ req, res, buildManifest })
+            .catch((err) => setImmediate(() => next(err)));
+        },
+        // Error middleware to call "renderError()" from the server-renderer
+        (err, req, res, next) => {
+            if (!err) {
+                return next();
+            }
+
+            const { stats: clientStats } = clientWebpack;
+            const { renderError: serverRenderError, stats: serverStats } = serverWebpack;
+
+            if (!serverStats || !serverRenderError || !clientStats) {
+                return next(err);
+            }
+
+            const buildManifest = manifest.merge(
+                manifest.fromWebpackStats(serverStats),
+                manifest.fromWebpackStats(clientStats)
+            );
+
+            serverRenderError({ err, req, res, buildManifest })
+            .catch((err) => setImmediate(() => next(err)));
         }
-
-        // Still building?
-        if (!serverStats || !serverRender) {
-            return res.send('Server-side bundle is still being compiled, please refresh the page in a few seconds..');
-        }
-        if (!clientStats) {
-            return res.send('Client-side bundles are still being compiled, please refresh the page in a few seconds..');
-        }
-
-        const buildManifest = manifest.merge(
-            manifest.fromWebpackStats(serverStats),
-            manifest.fromWebpackStats(clientStats)
-        );
-
-        serverRender({ req, res, buildManifest })
-        .catch((err) => setImmediate(() => next(err)));
-    });
-
-    // Error middleware to call "renderError" from the server-renderer
-    app.use((err, req, res, next) => {
-        const { stats: clientStats } = clientWebpack;
-        const { renderError: serverRenderError, stats: serverStats } = serverWebpack;
-
-        if (!serverStats || !serverRenderError || !clientStats) {
-            return next(err);
-        }
-
-        const buildManifest = manifest.merge(
-            manifest.fromWebpackStats(serverStats),
-            manifest.fromWebpackStats(clientStats)
-        );
-
-        serverRenderError({ err, req, res, buildManifest })
-        .catch((err) => setImmediate(() => next(err)));
-    });
+    );
 
     // Start server
     return new Promise((resolve, reject) => {
