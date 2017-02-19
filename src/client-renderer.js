@@ -38,11 +38,7 @@ match({ history, routes }, (error, redirectLocation, renderProps) => {
         () => {
             // Remove server-side rendered CSS when developing, otherwise CSS styles would be duplicated
             if (process.env.NODE_ENV !== 'production') {
-                setTimeout(() => {
-                    const appCssEl = document.getElementById('app-css');
-
-                    appCssEl && appCssEl.parentNode.removeChild(appCssEl);
-                }, 100);
+                setTimeout(() => document.getElementById('app-css').remove(), 100);
             }
         }
     );

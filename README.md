@@ -6,7 +6,6 @@ MOXY's react boilerplate.
 
 TODO:
 
-
 ### Main stuff
 
 - react
@@ -26,6 +25,12 @@ TODO:
     - nprogress
     - font variables
     - color variables
+
+### Browser support
+
+- Babel polyfill note
+- DOM4 note
+- SVG note on IE11
 
 
 ## Installation
