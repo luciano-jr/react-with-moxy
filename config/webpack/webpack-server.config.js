@@ -68,8 +68,6 @@ module.exports = (options) => {
                             'react',
                         ].filter((val) => val),
                         plugins: [
-                            // Necessary for babel to run (replaces babel-polyfill)
-                            'transform-runtime',
                             // Necessary for import() to work
                             'dynamic-import-node',
                             // Transforms that optimize build
