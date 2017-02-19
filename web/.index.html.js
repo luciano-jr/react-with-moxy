@@ -1,4 +1,4 @@
-import { difference } from 'lodash';
+import difference from 'lodash/difference';
 
 export default function index({ head, rootHtml, config, buildManifest }) {
     const { assets, routes: { sync: syncRoutes, async: asyncRoutes } } = buildManifest;
