@@ -55,6 +55,10 @@ module.exports = (options) => {
                 shared: `${projectDir}/src/shared`,
             },
         },
+        node: {
+            // Set any node modules here that should be ignored by client side code
+            // fs: 'empty',
+        },
         module: {
             rules: [
                 // Babel loader enables us to use new ECMA features + react's JSX

@@ -171,7 +171,7 @@ function runServer() {
     const serverWebpack = setupServerWebpack();
 
     // Public files are served without any cache
-    app.use('/', express.static('web', {
+    app.use('/', express.static(`${projectDir}/web`, {
         maxAge: 0,
         etag: false,
     }));
