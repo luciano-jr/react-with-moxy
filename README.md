@@ -30,7 +30,7 @@ TODO:
 
 - Babel polyfill note
 - DOM4 note
-- SVG note on IE11
+- SVG note on IE11 (svgxuse & explicit with/height)
 
 
 ## Installation
