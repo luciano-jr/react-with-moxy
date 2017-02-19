@@ -28,7 +28,10 @@ let routes = buildRoutes();
 match({ history, routes }, (error, redirectLocation, renderProps) => {
     render(
         <AppContainer>
-            <Router { ...renderProps } history={ history } routes={ routes }
+            <Router
+                { ...renderProps }
+                history={ history }
+                routes={ routes }
                 render={ applyRouterMiddleware(useScroll()) } />
         </AppContainer>,
         document.getElementById('root'),
@@ -54,7 +57,10 @@ if (__DEV__ && module.hot) {
 
         render(
             <AppContainer>
-                <Router history={ history } routes={ routes } />
+                <Router
+                    history={ history }
+                    routes={ routes }
+                    render={ applyRouterMiddleware(useScroll()) } />
             </AppContainer>,
             document.getElementById('root'),
         );
