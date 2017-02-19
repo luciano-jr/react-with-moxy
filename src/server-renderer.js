@@ -81,3 +81,5 @@ export async function renderError({ err, req, res, buildManifest }) {
     // Send HTML
     res.send(html);
 }
+
+export { config };
