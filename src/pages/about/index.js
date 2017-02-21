@@ -1,13 +1,11 @@
 export default (loadComponent) => [
     {
         path: 'about',
-        getComponent(nextState, callback) {
-            // When developing, we need to return synchornously for hot-module reload to work
-            if (__DEV__) {
-                return callback(null, require('./About').default);
-            }
-
-            return loadComponent(import('./About'));
-        },
+        // @ifdef DEV
+        // Ensure component is required synchronously in DEV so that it works with react-hot-loader
+        // See: https://github.com/gaearon/react-hot-loader/issues/288#issuecomment-281372266
+        component: require('./About').default,
+        // @endif
+        getComponent: () => loadComponent(import('./About')),
     },
 ];
