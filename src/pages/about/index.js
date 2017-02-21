@@ -1,7 +1,13 @@
 export default (loadComponent) => [
     {
         path: 'about',
-        component: __DEV__ && require('./About').default,
-        getComponent: () => loadComponent(import('./About')),
+        getComponent(nextState, callback) {
+            // When developing, we need to return synchornously for hot-module reload to work
+            if (__DEV__) {
+                return callback(null, require('./About').default);
+            }
+
+            return loadComponent(import('./About'));
+        },
     },
 ];
