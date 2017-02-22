@@ -4,7 +4,7 @@ export default function index({ head, rootHtml, config, buildManifest }) {
     const { assets, routes: { sync: syncRoutes, async: asyncRoutes } } = buildManifest;
     const { routesToPrefetch } = config;
 
-    // Warn if the any of the routes to prefetch no longer exist
+    // Warn if any of the routes to prefetch no longer exist
     if (__DEV__) {
         routesToPrefetch
         .forEach((route) => {
