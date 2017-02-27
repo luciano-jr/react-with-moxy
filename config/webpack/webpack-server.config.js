@@ -59,23 +59,30 @@ module.exports = (options) => {
                 {
                     test: /\.js$/,
                     exclude: /node_modules/,
-                    loader: 'babel-loader',
-                    options: {
-                        cacheDirectory: true,
-                        presets: [
-                            'es2015',
-                            'stage-3',
-                            'react',
-                        ].filter((val) => val),
-                        plugins: [
-                            // Necessary for import() to work
-                            'dynamic-import-node',
-                            // Transforms that optimize build
-                            options.build ? 'transform-react-remove-prop-types' : null,
-                            options.build ? 'transform-react-constant-elements' : null,
-                            options.build ? 'transform-react-inline-elements' : null,
-                        ].filter((val) => val),
-                    },
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true,
+                                presets: [
+                                    'es2015',
+                                    'stage-3',
+                                    'react',
+                                ].filter((val) => val),
+                                plugins: [
+                                    // Necessary for import() to work
+                                    'dynamic-import-node',
+                                    // Transforms that optimize build
+                                    options.build ? 'transform-react-remove-prop-types' : null,
+                                    options.build ? 'transform-react-constant-elements' : null,
+                                    options.build ? 'transform-react-inline-elements' : null,
+                                ].filter((val) => val),
+                            },
+                        },
+                        // Enable preprocess-loader so that we can use @ifdef DEV when declaring routes
+                        // See: https://github.com/gaearon/react-hot-loader/issues/288#issuecomment-281372266
+                        !options.build ? 'preprocess-loader?+DEV' : 'preprocess-loader',
+                    ],
                 },
                 // CSS files loader which enables the use of postcss & cssnext
                 {

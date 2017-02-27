@@ -33,12 +33,13 @@ module.exports = (options) => {
         context: projectDir,
         entry: {
             main: [
+                'babel-polyfill',  // Necessary for babel to run (replaces babel-polyfill)
+                'dom4',  // Adds dom4 polyfills, such as Element.remove(), etc
                 !options.build && 'eventsource-polyfill',  // Necessary to make hmr work on IE
                 !options.build && 'react-hot-loader/patch',  // For hot module reload
                 !options.build && 'webpack-hot-middleware/client?reload=true',  // For hot module reload
-                'babel-polyfill',  // Necessary for babel to run (replaces babel-polyfill)
                 './src/client-renderer.js',
-            ].filter((val) => !!val),
+            ].filter((val) => val),
             deferrable: [
                 'svgxuse',  // Necessary because external svgs need a polyfill in IE
             ],
@@ -65,25 +66,32 @@ module.exports = (options) => {
                 {
                     test: /\.js$/,
                     exclude: /node_modules/,
-                    loader: 'babel-loader',
-                    options: {
-                        cacheDirectory: true,
-                        presets: [
-                            'es2015',
-                            'stage-3',
-                            'react',
-                        ].filter((val) => val),
-                        plugins: [
-                            // Necessary for import() to work
-                            'syntax-dynamic-import',
-                            // <3 hot module reload
-                            !options.build ? 'react-hot-loader/babel' : null,
-                            // Transforms that optimize build
-                            options.build ? 'transform-react-remove-prop-types' : null,
-                            options.build ? 'transform-react-constant-elements' : null,
-                            options.build ? 'transform-react-inline-elements' : null,
-                        ].filter((val) => val),
-                    },
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true,
+                                presets: [
+                                    'es2015',
+                                    'stage-3',
+                                    'react',
+                                ].filter((val) => val),
+                                plugins: [
+                                    // Necessary for import() to work
+                                    'syntax-dynamic-import',
+                                    // <3 hot module reload
+                                    !options.build ? 'react-hot-loader/babel' : null,
+                                    // Transforms that optimize build
+                                    options.build ? 'transform-react-remove-prop-types' : null,
+                                    options.build ? 'transform-react-constant-elements' : null,
+                                    options.build ? 'transform-react-inline-elements' : null,
+                                ].filter((val) => val),
+                            },
+                        },
+                        // Enable preprocess-loader so that we can use @ifdef DEV when declaring routes
+                        // See: https://github.com/gaearon/react-hot-loader/issues/288#issuecomment-281372266
+                        !options.build ? 'preprocess-loader?+DEV' : 'preprocess-loader',
+                    ],
                 },
                 // CSS files loader which enables the use of postcss & cssnext
                 {

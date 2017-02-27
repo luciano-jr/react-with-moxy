@@ -67,7 +67,7 @@ export async function renderError({ err, req, res, buildManifest }) {
     const rootHtml = renderToString(
         <RouterContext
             { ...renderProps }
-            createElement={ (Component, props) => <Component { ...props } err={ err } serverContext={ serverContext } /> } />
+            createElement={ (Component, props) => <Component { ...props } serverContext={ serverContext } /> } />
     );
 
     // Render document

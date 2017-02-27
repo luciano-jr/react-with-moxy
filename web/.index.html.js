@@ -1,10 +1,10 @@
-import { difference } from 'lodash';
+import difference from 'lodash/difference';
 
 export default function index({ head, rootHtml, config, buildManifest }) {
     const { assets, routes: { sync: syncRoutes, async: asyncRoutes } } = buildManifest;
     const { routesToPrefetch } = config;
 
-    // Warn if the any of the routes to prefetch no longer exist
+    // Warn if any of the routes to prefetch no longer exist
     if (__DEV__) {
         routesToPrefetch
         .forEach((route) => {
@@ -33,7 +33,7 @@ export default function index({ head, rootHtml, config, buildManifest }) {
                 <link id="app-css" rel="stylesheet" href="${assets['app.css']}">
 
                 <!-- Prefetch routes -->
-                ${ routesToPrefetch.map((route) => asyncRoutes[route] ? `<link rel="prefetch" href="${routes[route]}">` : '').join('\n') }
+                ${ routesToPrefetch.map((route) => asyncRoutes[route] ? `<link rel="prefetch" href="${asyncRoutes[route]}">` : '').join('\n') }
             </head>
             <body>
                 <!-- Root element where app goes -->
