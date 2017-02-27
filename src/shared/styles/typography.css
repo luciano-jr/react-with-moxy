@@ -12,9 +12,9 @@ body {
 }
 
 body {
-    color: var(--color-violet);
     font-family: var(--typography-text-font);
     font-size: 16px;
+    color: var(--color-violet);
     overflow-wrap: break-word;  /* Break long words by default */
 }
 
