@@ -91,7 +91,7 @@ function runServer() {
         // Error middleware to call "renderError()" from the server-renderer
         (err, req, res, next) => {
             if (!err) {
-                return next(err);
+                return next();
             }
 
             serverRenderError({ err, req, res, buildManifest })
