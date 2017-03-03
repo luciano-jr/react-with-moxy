@@ -6,6 +6,7 @@ const assert = require('assert');
 const path = require('path');
 const assign = require('lodash/assign');
 const projectDir = path.resolve(`${__dirname}/../..`);
+const packageJson = require(`${projectDir}/package.json`);
 
 // Webpack plugins
 const SvgStorePlugin = require('external-svg-sprite-loader/lib/SvgStorePlugin');
@@ -15,6 +16,7 @@ const NoEmitOnErrorsPlugin = require('webpack/lib/NoEmitOnErrorsPlugin');
 const DefinePlugin = require('webpack/lib/DefinePlugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+const WebpackNotifierPlugin = require('webpack-notifier');
 
 module.exports = (options) => {
     options = assign({ env: 'dev' }, options);
@@ -237,6 +239,11 @@ module.exports = (options) => {
             }),
             // External svg sprite plugin
             new SvgStorePlugin({ emit: false }),
+            // Display build status system notification to the user
+            new WebpackNotifierPlugin({
+                title: packageJson.name,
+                contentImage: `${projectDir}/web/favicon.ico`,
+            }),
         ].filter((val) => val),
         devtool: false,  // Not necessary because they are not supported in NodeJS (maybe they are?)
     };
