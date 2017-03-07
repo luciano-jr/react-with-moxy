@@ -27,12 +27,12 @@ html {
 body {
     overflow-y: scroll;  /* 1 */
     display: flex; /* 2 */
-    flex-grow: 1;  /* 2 */
+    flex: 1 0 auto;  /* 2 */
     flex-direction: column;  /* 2 */
 }
 
 #root {
     display: flex;  /* 2 */
-    flex-grow: 1; /* 2 */
+    flex: 1 0 auto; /* 2 */
     flex-direction: column;  /* 2 */
 }
