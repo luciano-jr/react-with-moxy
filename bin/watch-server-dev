@@ -13,6 +13,7 @@ watchArr.push(path.resolve(`${__dirname}/util`));
 
 nodemon({
     script: `${__dirname}/server-dev`,
+    args: process.argv.slice(2),
     watch: watchArr,
 });
 
