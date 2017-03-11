@@ -61,10 +61,21 @@ const env = 'dev';  // This server is only for the dev environment
 // Functions
 // ---------------------------------------------------------
 
-function printWebpackStatsOnBuild(compiler, compilerType) {
+function handleWebpackStatsOnBuild(compiler, compilerType, result) {
     let firstBuild = true;
 
     compiler.plugin('done', (stats) => {
+        // Store stats
+        result.stats = stats;
+
+        // Open browser on first build
+        if (firstBuild && compilerType === 'server') {
+            opn(`http://${argv.hostname}:${argv.port}`);
+        }
+
+        firstBuild = false;
+
+        // Print stats
         const statsJson = stats.toJson();
         const statsStr = stats.toString({ assets: firstBuild, chunks: false, version: false, children: false, modules: false,
             colors: true }).trim();
@@ -78,12 +89,6 @@ function printWebpackStatsOnBuild(compiler, compilerType) {
             process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
             process.stdout.write(`${statsStr}\n\n`);
         }
-
-        if (firstBuild && compilerType === 'server') {
-            opn(`http://${argv.hostname}:${argv.port}`);
-        }
-
-        firstBuild = false;
     });
 }
 
@@ -95,13 +100,8 @@ function setupClientWebpack(app) {
         stats: null,
     };
 
-    // Print info on each build
-    printWebpackStatsOnBuild(compiler, 'client');
-
-    // Store stats on each build
-    compiler.plugin('done', (stats) => {
-        result.stats = stats;
-    });
+    // Handle each build by storing stats & printing useful info
+    handleWebpackStatsOnBuild(compiler, 'client', result);
 
     // Attach dev + hot middlewares to our express app
     const webpackDevMiddlewareInstance = webpackDevMiddleware(compiler, {
@@ -126,13 +126,8 @@ function setupServerWebpack() {
         compiler,
     };
 
-    // Print info on each build
-    printWebpackStatsOnBuild(compiler, 'server');
-
-    // Store stats on each build
-    compiler.plugin('done', (stats) => {
-        result.stats = stats;
-    });
+    // Handle each build by storing stats & printing useful info
+    handleWebpackStatsOnBuild(compiler, 'server', result);
 
     // Complete on each change, storing the render function
     compiler.watch({ poll: argv.polling }, (err) => {
