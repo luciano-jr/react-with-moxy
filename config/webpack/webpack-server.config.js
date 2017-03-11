@@ -240,7 +240,7 @@ module.exports = (options) => {
             // External svg sprite plugin
             new SvgStorePlugin({ emit: false }),
             // Display build status system notification to the user
-            new WebpackNotifierPlugin({
+            !options.build && new WebpackNotifierPlugin({
                 title: packageJson.name,
                 contentImage: `${projectDir}/web/favicon.ico`,
             }),
