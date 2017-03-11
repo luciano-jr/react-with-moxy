@@ -96,7 +96,7 @@ function setupClientWebpack(app) {
     };
 
     // Print info on each build
-    printWebpackStatsOnBuild(compiler, 'client-side');
+    printWebpackStatsOnBuild(compiler, 'client');
 
     // Store stats on each build
     compiler.plugin('done', (stats) => {
