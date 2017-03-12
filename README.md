@@ -28,8 +28,7 @@ TODO:
 
 ### Browser support
 
-- Babel polyfill note
-- DOM4 note
+- Polyfill.io note (including dom stuff)
 - SVG note on IE11 (svgxuse & explicit with/height)
 
 
