@@ -1,14 +1,14 @@
 import React, { PureComponent, PropTypes } from 'react';
 import classnames from 'classnames';
 import SvgInlineReact from 'svg-inline-react';
-import './Svg.css';
+import styles from './Svg.css';
 
 class SvgInline extends PureComponent {
     render() {
         const { className, svg, ...props } = this.props;
 
         return (
-            <SvgInlineReact className={ classnames('svg svg--inline', className) } src={ svg } { ...props } />
+            <SvgInlineReact className={ classnames(styles.svg, className) } src={ svg } { ...props } />
         );
     }
 }
