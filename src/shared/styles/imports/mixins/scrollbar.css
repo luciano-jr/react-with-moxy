@@ -4,9 +4,9 @@
 
 @define-mixin scrollbar $selector, $size: 7px, $color: rgba(0, 0, 0, 0.5), $radius: 4px {
     $selector::-webkit-scrollbar {
-        appearance: none;
         width: $size;
         height: $size;
+        appearance: none;
     }
 
     $selector::-webkit-scrollbar-thumb {
