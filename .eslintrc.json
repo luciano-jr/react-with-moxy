@@ -4,7 +4,9 @@
     "extends": [
         "eslint-config-moxy/es8",
         "eslint-config-moxy/addons/browser",
-        "eslint-config-moxy/addons/react"
+        "eslint-config-moxy/addons/es6-modules",
+        "eslint-config-moxy/addons/react",
+        "eslint-config-moxy/addons/object-spread"
     ],
     "globals": {
         "process": false,
