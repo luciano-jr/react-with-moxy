@@ -93,31 +93,35 @@ module.exports = (options) => {
                         fallback: {
                             loader: 'style-loader',
                             options: {
-                                fixUrls: options.env === 'dev',
+                                convertToAbsoluteUrls: !options.build,
                             },
                         },
                         use: [
                             {
                                 loader: 'css-loader',
                                 options: {
-                                    convertToAbsoluteUrls: true,
+                                    modules: true,
+                                    sourceMap: true,
+                                    importLoaders: 1,
+                                    camelCase: 'dashes',
+                                    localIdentName: '[name]__[local]___[hash:base64:5]!',
                                 },
                             },
                             {
                                 loader: 'postcss-loader',
                                 options: {
                                     plugins: [
-                                            // Let postcss parse @import statements
+                                        // Let postcss parse @import statements
                                         require('postcss-import')({
-                                                // Any non-relative imports are resolved to this path
+                                            // Any non-relative imports are resolved to this path
                                             path: './src/shared/styles/imports',
                                         }),
-                                            // Add support for CSS mixins
+                                        // Add support for CSS mixins
                                         require('postcss-mixins'),
-                                            // Add support for CSS variables using postcss-css-variables
-                                            // instead of cssnext one, which is more powerful
+                                        // Add support for CSS variables using postcss-css-variables
+                                        // instead of cssnext one, which is more powerful
                                         require('postcss-css-variables')(),
-                                            // Use CSS next, disabling some features
+                                        // Use CSS next, disabling some features
                                         require('postcss-cssnext')({
                                             features: {
                                                 overflowWrap: true,
