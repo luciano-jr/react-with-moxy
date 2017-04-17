@@ -16,7 +16,8 @@ const projectDir = `${__dirname}/..`;
 const argv = yargs
 .strict()
 .wrap(Math.min(120, yargs.terminalWidth()))
-.help('help').alias('help', 'h')
+.help('help')
+.alias('help', 'h')
 .usage('Usage: ./$0 [options]')
 .demand(0, 0)
 .option('lint-output', {
@@ -48,7 +49,7 @@ function runEslint(files) {
     });
     const report = cli.executeOnFiles(files);
 
-    // output fixes to disk
+    // Output fixes to disk
     CLIEngine.outputFixes(report);
 
     if (argv.lintOutput) {

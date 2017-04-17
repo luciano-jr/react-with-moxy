@@ -28,7 +28,8 @@ const projectDir = `${__dirname}/..`;
 const argv = yargs
 .strict()
 .wrap(Math.min(120, yargs.terminalWidth()))
-.help('help').alias('help', 'h')
+.help('help')
+.alias('help', 'h')
 .usage('Usage: ./$0 [options]')
 .demand(0, 0)
 .env('SERVER')
@@ -80,8 +81,14 @@ function handleWebpackStatsOnBuild(compiler, compilerType, result) {
 
         // Print stats
         const statsJson = stats.toJson();
-        const statsStr = stats.toString({ assets: firstBuild, chunks: false, version: false, children: false, modules: false,
-            colors: true }).trim();
+        const statsStr = stats.toString({
+            assets: firstBuild,
+            chunks: false,
+            version: false,
+            children: false,
+            modules: false,
+            colors: true,
+        }).trim();
 
         if (statsJson.errors.length) {
             process.stdout.write(`> Webpack ${compilerType}-side build failed..\n`);
@@ -139,6 +146,7 @@ function setupServerWebpack() {
             process.stdout.write('Webpack server-side build failed..\n');
             process.stdout.write('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
             console.log(err);
+
             return;
         }
 
