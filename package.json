@@ -37,6 +37,7 @@
     "nprogress": "^0.2.0",
     "pify": "^2.3.0",
     "planify": "^1.5.0",
+    "prop-types": "^15.5.8",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-helmet": "^4.0.0",
