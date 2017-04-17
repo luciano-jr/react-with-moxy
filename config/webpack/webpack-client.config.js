@@ -231,7 +231,6 @@ module.exports = (options) => {
             !options.build && new HotModuleReplacementPlugin(),
             // Alleviate cases where developers working on OSX, which does not follow strict path case sensitivity
             new CaseSensitivePathsPlugin(),
-            // Move CSS styles to a separate file when NOT dev
             // At the moment we only generic a single app CSS file which is kind of bad, see: https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/332
             new ExtractTextPlugin({
                 filename: 'app.[contenthash:15].css',

@@ -89,58 +89,52 @@ module.exports = (options) => {
                 // CSS files loader which enables the use of postcss & cssnext
                 {
                     test: /\.css$/,
-                    loader: options.build ?
-                        'skip-loader' :
-                        ExtractTextPlugin.extract({
-                            fallback: {
-                                loader: 'style-loader',
+                    loader: ExtractTextPlugin.extract({
+                        fallback: {
+                            loader: 'style-loader',
+                            options: {
+                                fixUrls: options.env === 'dev',
+                            },
+                        },
+                        use: [
+                            {
+                                loader: 'css-loader',
                                 options: {
                                     convertToAbsoluteUrls: true,
                                 },
                             },
-                            use: [
-                                {
-                                    loader: 'css-loader',
-                                    options: {
-                                        modules: true,
-                                        sourceMap: true,
-                                        importLoaders: 1,
-                                        camelCase: 'dashes',
-                                        localIdentName: '[name]__[local]___[hash:base64:5]!',
-                                    },
-                                },
-                                {
-                                    loader: 'postcss-loader',
-                                    options: {
-                                        plugins: [
+                            {
+                                loader: 'postcss-loader',
+                                options: {
+                                    plugins: [
                                             // Let postcss parse @import statements
-                                            require('postcss-import')({
+                                        require('postcss-import')({
                                                 // Any non-relative imports are resolved to this path
-                                                path: './src/shared/styles/imports',
-                                            }),
+                                            path: './src/shared/styles/imports',
+                                        }),
                                             // Add support for CSS mixins
-                                            require('postcss-mixins'),
+                                        require('postcss-mixins'),
                                             // Add support for CSS variables using postcss-css-variables
                                             // instead of cssnext one, which is more powerful
-                                            require('postcss-css-variables')(),
+                                        require('postcss-css-variables')(),
                                             // Use CSS next, disabling some features
-                                            require('postcss-cssnext')({
-                                                features: {
-                                                    overflowWrap: true,
-                                                    rem: false,               // Not necessary for our browser support
-                                                    colorRgba: false,         // Not necessary for our browser support
-                                                    customProperties: false,  // We are using postcss-css-variables instead
-                                                    autoprefixer: {
-                                                        browsers: ['last 2 versions', 'IE >= 11', 'android >= 4.4.4'],
-                                                        remove: false, // No problem disabling, we use prefixes when really necessary
-                                                    },
+                                        require('postcss-cssnext')({
+                                            features: {
+                                                overflowWrap: true,
+                                                rem: false,               // Not necessary for our browser support
+                                                colorRgba: false,         // Not necessary for our browser support
+                                                customProperties: false,  // We are using postcss-css-variables instead
+                                                autoprefixer: {
+                                                    browsers: ['last 2 versions', 'IE >= 11', 'android >= 4.4.4'],
+                                                    remove: false, // No problem disabling, we use prefixes when really necessary
                                                 },
-                                            }),
-                                        ],
-                                    },
+                                            },
+                                        }),
+                                    ],
                                 },
-                            ],
-                        }),
+                            },
+                        ],
+                    }),
                 },
                 // Load SVG files and create an external sprite
                 // While this has a lot of advantages, such as not blocking the initial load, it can't contain
@@ -234,9 +228,8 @@ module.exports = (options) => {
             new NamedModulesPlugin(),
             // Alleviate cases where developers working on OSX, which does not follow strict path case sensitivity
             new CaseSensitivePathsPlugin(),
-            // Move CSS styles to a separate file when NOT dev
             // At the moment we only generic a single app CSS file which is kind of bad, see: https://github.com/webpack-contrib/extract-text-webpack-plugin/issues/332
-            !options.build && new ExtractTextPlugin({
+            new ExtractTextPlugin({
                 filename: 'app.css',
                 allChunks: true,
             }),
