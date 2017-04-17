@@ -90,15 +90,10 @@ module.exports = (options) => {
                 {
                     test: /\.css$/,
                     loader: ExtractTextPlugin.extract({
-                        fallback: {
-                            loader: 'style-loader',
-                            options: {
-                                convertToAbsoluteUrls: !options.build,
-                            },
-                        },
                         use: [
                             {
-                                loader: 'css-loader',
+                                // When building, we do not want to include the CSS contents.. the client will be responsible for that
+                                loader: options.build ? 'css-loader/locals' : 'css-loader',
                                 options: {
                                     modules: true,
                                     sourceMap: true,
@@ -236,6 +231,7 @@ module.exports = (options) => {
             new ExtractTextPlugin({
                 filename: 'app.css',
                 allChunks: true,
+                disable: options.build,
             }),
             // External svg sprite plugin
             new SvgStorePlugin({ emit: false }),
