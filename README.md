@@ -37,7 +37,7 @@ TODO:
 
 1. Clone the project
 2. Change the `origin` remote to your project's repository
-3. Create a new remove called `boilerplate` pointing to this repository so that you can pull boilerplate updates
+3. Create a new remote called `boilerplate` pointing to this repository so that you can pull boilerplate updates
 4. `$ npm install`
 
 
